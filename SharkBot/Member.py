@@ -2,7 +2,7 @@ import json
 import os
 from datetime import datetime, timedelta
 
-from SharkBot import Cooldown, MemberInventory, MemberCollection, Mission, MemberStats
+from SharkBot import Cooldown, MemberInventory, MemberCollection, Mission, MemberStats, Valorant
 from SharkBot.Handlers import firestoreHandler
 
 birthdayFormat = "%d/%m/%Y"
@@ -34,6 +34,7 @@ class Member:
             self.birthday = datetime.strptime(member_data["birthday"], birthdayFormat)
         self.lastClaimedBirthday = member_data["lastClaimedBirthday"]
         self.stats = MemberStats.MemberStats(member_data["stats"])
+        self.valorant = Valorant.PlayerData(member_data["valorant"])
 
     def write_data(self, upload: bool = False) -> None:
 
@@ -51,7 +52,8 @@ class Member:
             "missions": self.missions.data,
             "birthday": None if self.birthday is None else datetime.strftime(self.birthday, birthdayFormat),
             "lastClaimedBirthday": self.lastClaimedBirthday,
-            "stats": self.stats.data
+            "stats": self.stats.data,
+            "valorant": self.valorant.raw_data
         }
 
         with open(f"{membersDirectory}/{self.id}.json", "w") as outfile:
@@ -105,7 +107,8 @@ defaultValues = {
     "missions": [],
     "birthday": None,
     "lastClaimedBirthday": 2021,
-    "stats": {}
+    "stats": {},
+    "valorant": {}
 }
 
 
