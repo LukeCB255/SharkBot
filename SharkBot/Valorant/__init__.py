@@ -1,4 +1,5 @@
-from . import Map, Agent, Errors
+from . import Agent, Errors
+from .Map import Map
 from .PlayerData import PlayerData
 
 agents = Agent.agents
