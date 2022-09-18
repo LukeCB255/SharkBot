@@ -1,0 +1,78 @@
+[
+  {
+    "name": "Astra",
+    "aliases": []
+  },
+  {
+    "name": "Breach",
+    "aliases": []
+  },
+  {
+    "name": "Brimstone",
+    "aliases": ["Brim"]
+  },
+  {
+    "name": "Chamber",
+    "aliases": []
+  },
+  {
+    "name": "Cypher",
+    "aliases": []
+  },
+  {
+    "name": "Fade",
+    "aliases": []
+  },
+  {
+    "name": "Jett",
+    "aliases": []
+  },
+  {
+    "name": "Kay/O",
+    "aliases": ["Kayo"]
+  },
+  {
+    "name": "Killjoy",
+    "aliases": ["KJ"]
+  },
+  {
+    "name": "Neon",
+    "aliases": []
+  },
+  {
+    "name": "Omen",
+    "aliases": []
+  },
+  {
+    "name": "Pheonix",
+    "aliases": []
+  },
+  {
+    "name": "Raze",
+    "aliases": []
+  },
+  {
+    "name": "Reyna",
+    "aliases": []
+  },
+  {
+    "name": "Sage",
+    "aliases": []
+  },
+  {
+    "name": "Skye",
+    "aliases": []
+  },
+  {
+    "name": "Sova",
+    "aliases": []
+  },
+  {
+    "name": "Viper",
+    "aliases": []
+  },
+  {
+    "name": "Yoru",
+    "aliases": []
+  }
+]
