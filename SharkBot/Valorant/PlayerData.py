@@ -4,7 +4,7 @@ from SharkBot import Valorant, SharkErrors
 class PlayerData:
 
     def __init__(self, data: dict[str, dict[str, int]]):
-        self.data: dict[Valorant.Map, dict[Valorant.Agent.Agent, int]] = {
+        self.data: dict[Valorant.Map, dict[Valorant.Agent, int]] = {
             Valorant.Map.get(mapName): {
                 Valorant.Agent.get(agentName): value for agentName, value in mapData.items()
             } for mapName, mapData in data.items()
@@ -18,7 +18,7 @@ class PlayerData:
             } for map, mapData in self.data.items()
         }
 
-    def get_agent_value(self, agent: Valorant.Agent.Agent, map: Valorant.Map) -> int:
+    def get_agent_value(self, agent: Valorant.Agent, map: Valorant.Map) -> int:
         if map not in self.data.keys():
             map = Valorant.maps[0]
             if map not in self.data.keys():
@@ -29,7 +29,7 @@ class PlayerData:
         else:
             return Valorant.defaultAgentValue
 
-    def set_agent_value(self, agent: Valorant.Agent.Agent, map: Valorant.Map, value: int):
+    def set_agent_value(self, agent: Valorant.Agent, map: Valorant.Map, value: int):
         if value < Valorant.defaultAgentValue or value > Valorant.maxAgentValue:
             raise Valorant.Errors.InvalidAgentValueError(value)
 
