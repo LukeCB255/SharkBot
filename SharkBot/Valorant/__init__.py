@@ -2,6 +2,7 @@ from . import Errors
 from .Agent import Agent
 from .Map import Map
 from .PlayerData import PlayerData
+from . import Analysis
 
 agents = Agent.agents
 maps = Map.maps
