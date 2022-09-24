@@ -2,12 +2,6 @@ import discord
 from discord.ext import tasks, commands
 import SharkBot
 
-import secret
-if secret.testBot:
-	import testids as ids
-else:
-	import ids
-
 	
 class Valorant(commands.Cog):
 	
