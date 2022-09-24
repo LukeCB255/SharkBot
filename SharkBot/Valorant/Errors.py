@@ -1,13 +1,19 @@
+import discord
+from discord.ext import commands
 from SharkBot.Errors import SharkError
 
 
-class AgentNotFoundError(SharkError):
+class ValorantError(SharkError):
     pass
 
 
-class MapNotFoundError(SharkError):
+class AgentNotFoundError(ValorantError):
     pass
 
 
-class InvalidAgentValueError(SharkError):
+class MapNotFoundError(ValorantError):
+    pass
+
+
+class InvalidAgentValueError(ValorantError):
     pass
