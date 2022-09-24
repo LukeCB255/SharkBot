@@ -1,14 +1,7 @@
 import discord
-from discord.ext import tasks, commands
-from asyncio import TimeoutError
-from SharkBot import Member
+from discord.ext import commands
 
-import secret
-
-if secret.testBot:
-    import testids as ids
-else:
-    import ids
+from SharkBot import Member, IDs
 
 
 class Economy(commands.Cog):
@@ -17,7 +10,7 @@ class Economy(commands.Cog):
         self.bot = bot
 
     @commands.command(name="setbalance", aliases=["setbal"], brief="Sets the target's SharkCoin balance.")
-    @commands.has_role(ids.roles["Mod"])
+    @commands.has_role(IDs.roles["Mod"])
     async def set_balance(self, ctx, target: discord.Member, amount: int):
         member = Member.get(target.id)
         member.balance = amount
@@ -26,7 +19,7 @@ class Economy(commands.Cog):
 
     @commands.command(name="addbalance", aliases=["addbal", "addfunds"],
                       brief="Adds to the target's SharkCoin balance.")
-    @commands.has_role(ids.roles["Mod"])
+    @commands.has_role(IDs.roles["Mod"])
     async def add_balance(self, ctx, target: discord.Member, amount: int):
         member = Member.get(target.id)
         member.balance += amount
@@ -34,7 +27,7 @@ class Economy(commands.Cog):
         member.write_data()
 
     @commands.command(name="getbalance", aliases=["getbal"], brief="Returns the target's SharkCoin balance.")
-    @commands.has_role(ids.roles["Mod"])
+    @commands.has_role(IDs.roles["Mod"])
     async def get_balance(self, ctx, target: discord.Member):
         member = Member.get(target.id)
         bal = member.balance
@@ -54,34 +47,19 @@ class Economy(commands.Cog):
     async def pay(self, ctx, target: discord.Member, amount: int):
         member = Member.get(ctx.author.id)
         targetMember = Member.get(target.id)
+
         if amount < 0:
             await ctx.send("Nice try buddy. Please enter a positive amount!")
             return
-
         if member.balance < amount:
-            await ctx.send("Sorry, you don't have enough coins to do that.")
+            await ctx.send("Sorry, you don't have enough SharkCoins to do that.")
             return
 
-        message = await ctx.send(f"Transfer {amount} to {target.display_name}?")
-        await message.add_reaction("✅")
-        await message.add_reaction("❌")
+        member.balance -= amount
+        targetMember.balance += amount
+        await ctx.reply(f"Sent **${amount}** to {target.mention}.", mention_author=False)
 
-        check = lambda react, author: author == ctx.author and react.message == message and react.emoji in ["✅", "❌"]
-
-        try:
-            reaction, user = await self.bot.wait_for("reaction_add", check=check, timeout=30)
-        except TimeoutError:
-            await message.edit(content="Transfer cancelled, timed out.")
-            return
-
-        if reaction.emoji == "✅":
-            member.balance -= amount
-            targetMember.balance += amount
-            await message.edit(content=f"Transferred {amount} to {target.display_name}.")
-        else:
-            await message.edit(content="Transfer cancelled.")
         member.write_data()
-
         targetMember.write_data()
 
 

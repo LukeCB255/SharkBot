@@ -1,13 +1,7 @@
 import discord
-from discord.ext import tasks, commands
+from discord.ext import commands
 
-import secret
 from SharkBot import Member
-
-if secret.testBot:
-	import testids as ids
-else:
-	import ids
 
 
 class Stats(commands.Cog):
@@ -36,7 +30,6 @@ class Stats(commands.Cog):
 		embed.set_footer(text="Stats began tracking on 04/09/2022")
 
 		await ctx.send(embed=embed)
-
 
 
 async def setup(bot):

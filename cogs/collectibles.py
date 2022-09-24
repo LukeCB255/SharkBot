@@ -3,13 +3,7 @@ import random
 import discord
 from discord.ext import commands
 
-import secret
-from SharkBot import Member, SharkErrors, Item, Collection, Views
-
-if secret.testBot:
-    import testids as ids
-else:
-    import ids
+from SharkBot import Member, Errors, Item, Collection, Views, IDs
 
 
 class Collectibles(commands.Cog):
@@ -22,7 +16,7 @@ class Collectibles(commands.Cog):
         member = Member.get(ctx.author.id)
         try:
             item = Item.search(search)
-        except SharkErrors.ItemNotFoundError:
+        except Errors.ItemNotFoundError:
             await ctx.reply(f"Sorry, I couldn't find *{search}*!", mention_author=False)
             return
         if member.collection.contains(item):
@@ -99,12 +93,12 @@ class Collectibles(commands.Cog):
             await ctx.reply(embed=embed, mention_author=False)
 
     @commands.command()
-    @commands.has_role(ids.roles["Mod"])
+    @commands.has_role(IDs.roles["Mod"])
     async def additem(self, ctx: commands.Context, target: discord.Member, *, search: str) -> None:
         targetMember = Member.get(target.id)
         try:
             item = Item.search(search)
-        except SharkErrors.ItemNotFoundError:
+        except Errors.ItemNotFoundError:
             await ctx.reply("Sorry, I couldn't find that item!", mention_author=False)
             return
         targetMember.inventory.add(item)
@@ -112,24 +106,24 @@ class Collectibles(commands.Cog):
         targetMember.write_data()
 
     @commands.command()
-    @commands.has_role(ids.roles["Mod"])
+    @commands.has_role(IDs.roles["Mod"])
     async def removeitem(self, ctx: commands.Context, target: discord.Member, *, search: str) -> None:
         targetMember = Member.get(target.id)
         try:
             item = Item.search(search)
-        except SharkErrors.ItemNotFoundError:
+        except Errors.ItemNotFoundError:
             await ctx.reply("Sorry, I couldn't find that item!", mention_author=False)
             return
         try:
             targetMember.inventory.remove(item)
-        except SharkErrors.ItemNotInInventoryError:
+        except Errors.ItemNotInInventoryError:
             await ctx.reply(f"Couldn't find item in *{target.display_name}*'s inventory", mention_author=False)
             return
         await ctx.reply(f"Removed **{item.name}** from *{target.display_name}*'s inventory.", mention_author=False)
         targetMember.write_data()
 
     @commands.command()
-    @commands.has_role(ids.roles["Mod"])
+    @commands.has_role(IDs.roles["Mod"])
     async def grantall(self, ctx: commands.Context, *itemids: str) -> None:
         items = [Item.get(itemid) for itemid in itemids]
 
@@ -153,7 +147,7 @@ class Collectibles(commands.Cog):
         else:  # $open specific lootbox
             try:
                 box = Item.search(boxType)
-            except SharkErrors.ItemNotFoundError:
+            except Errors.ItemNotFoundError:
                 await ctx.send("I couldn't find that lootbox!", mention_author=False)
                 return
             if type(box) != Item.Lootbox:
@@ -341,7 +335,7 @@ class Collectibles(commands.Cog):
 
         try:
             item = Item.search(search)
-        except SharkErrors.ItemNotFoundError:
+        except Errors.ItemNotFoundError:
             await ctx.reply("Sorry, I couldn't find that item!", mention_author=False)
             return
 
@@ -357,7 +351,7 @@ class Collectibles(commands.Cog):
                 mention_author=False)
             member.write_data()
 
-        except SharkErrors.ItemNotInInventoryError:
+        except Errors.ItemNotInInventoryError:
             await ctx.reply(f"It looks like you don't have an **{item.name}** :pensive:", mention_author=False)
 
     @commands.command(aliases=["c", "col"])
@@ -492,7 +486,7 @@ class Collectibles(commands.Cog):
         targetMember = Member.get(target.id)
         try:
             item = Item.search(search)
-        except SharkErrors.ItemNotFoundError:
+        except Errors.ItemNotFoundError:
             await ctx.reply("I'm afraid I couldn't find that item!", mention_author=False)
             return
 
@@ -501,7 +495,7 @@ class Collectibles(commands.Cog):
             targetMember.inventory.add(item)
             await ctx.reply(f"You gave {item.rarity.icon} **{item.name}** to *{target.display_name}*",
                             mention_author=False)
-        except SharkErrors.ItemNotInInventoryError:
+        except Errors.ItemNotInInventoryError:
             await ctx.reply(
                 f"It looks like you don't have {item.rarity.icon} **{item.name}** :pensive:",
                 mention_author=False)

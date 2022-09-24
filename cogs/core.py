@@ -3,13 +3,6 @@ import datetime
 import discord
 from discord.ext import commands
 
-import secret
-
-if secret.testBot:
-    import testids as ids
-else:
-    import ids
-
 
 class Core(commands.Cog):
 
@@ -27,6 +20,7 @@ class Core(commands.Cog):
     @commands.command()
     @commands.is_owner()
     async def send(self, ctx: commands.Context, channel: discord.TextChannel, *, text: str) -> None:
+        await ctx.reply(f"Sending \"{text}\" to {channel.mention}.", mention_author=False)
         await channel.send(text)
 
     @commands.hybrid_command()

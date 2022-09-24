@@ -2,14 +2,7 @@ from typing import Union
 
 import discord
 
-from SharkBot import SharkErrors
-
-import secret
-
-if secret.testBot:
-    import testids as ids
-else:
-    import ids
+from SharkBot import Errors, Icons
 
 
 class Collection:
@@ -17,7 +10,7 @@ class Collection:
     def __init__(self, collectionID: str, name: str, iconName: str, colour: Union[discord.Colour, int]) -> None:
         self.id = collectionID
         self.name = name
-        self.icon = ids.icons[iconName]
+        self.icon = Icons.Collections[iconName]
         self.colour = colour
         self.items = []
 
@@ -63,4 +56,4 @@ def get(search: str) -> Collection:
     for collection in collections:
         if search == collection.id or search == collection.name.upper():
             return collection
-    raise SharkErrors.CollectionNotFoundError(search)
+    raise Errors.CollectionNotFoundError(search)

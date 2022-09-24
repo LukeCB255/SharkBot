@@ -1,12 +1,4 @@
-from SharkBot import SharkErrors
-import discord
-
-import secret
-
-if secret.testBot:
-    import testids as ids
-else:
-    import ids
+from SharkBot import Errors, Icons
 
 
 class Rarity:
@@ -14,7 +6,7 @@ class Rarity:
     def __init__(self, name: str, value: int, iconName: str) -> None:
         self.name = name
         self.value = value
-        self.icon: str = ids.icons[iconName]
+        self.icon: str = Icons.Collections[iconName]
 
 
 common = Rarity("Common", 5, "common_item")
@@ -39,4 +31,4 @@ def get(search: str) -> Rarity:
     for rarity in rarities:
         if search == rarity.name.upper():
             return rarity
-    raise SharkErrors.RarityNotFoundError(search)
+    raise Errors.RarityNotFoundError(search)
