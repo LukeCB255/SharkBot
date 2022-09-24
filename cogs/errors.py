@@ -4,7 +4,7 @@ import discord
 import mysql.connector.errors
 from discord.ext import commands
 
-from SharkBot import IDs
+import SharkBot
 
 
 class Errors(commands.Cog):
@@ -41,12 +41,15 @@ class Errors(commands.Cog):
             await ctx.send("This command can only be used inside a server!")
             return
         if isinstance(error, mysql.connector.errors.DatabaseError):
-            chaos = await self.bot.fetch_user(IDs.dev)
+            chaos = await self.bot.fetch_user(SharkBot.IDs.dev)
             await chaos.send("Couldn't connect to SIMP database.")
             await chaos.send(error)
             return
         if isinstance(error, commands.MissingRole) or isinstance(error, commands.MissingPermissions):
             await ctx.send("I'm afraid you don't have permission to do that!")
+            return
+
+        if await SharkBot.Valorant.Errors.handler(ctx, error):
             return
 
         errorType = type(error)
@@ -59,7 +62,7 @@ class Errors(commands.Cog):
         embed.set_footer(text=errorName)
         await ctx.send(embed=embed)
 
-        chaos = await self.bot.fetch_user(IDs.dev)
+        chaos = await self.bot.fetch_user(SharkBot.IDs.dev)
         embed = discord.Embed()
         embed.title = "Error Report"
         embed.description = "Oopsie Woopsie"
