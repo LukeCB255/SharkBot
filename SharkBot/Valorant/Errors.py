@@ -32,3 +32,7 @@ class NoAnalysisFileError(ValorantError):
     async def handler(self, ctx: commands.Context) -> bool:
         await ctx.reply("I'm afraid SharkBot has no analysis file!")
         return True
+
+
+class MapNotInAnalysisError(ValorantError):
+    pass
