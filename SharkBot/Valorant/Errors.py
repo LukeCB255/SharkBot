@@ -25,3 +25,10 @@ class InvalidAgentValueError(ValorantError):
     async def handler(self, ctx: commands.Context) -> bool:
         await ctx.reply(f"I'm afraid {self.args} is not a valid Agent Value!")
         return True
+
+
+class NoAnalysisFileError(ValorantError):
+
+    async def handler(self, ctx: commands.Context) -> bool:
+        await ctx.reply("I'm afraid SharkBot has no analysis file!")
+        return True
