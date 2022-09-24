@@ -1,4 +1,3 @@
-import discord
 from discord.ext import commands
 from SharkBot.Errors import SharkError
 
@@ -8,29 +7,21 @@ class ValorantError(SharkError):
 
 
 class AgentNotFoundError(ValorantError):
-    pass
+
+    async def handler(self, ctx: commands.Context) -> bool:
+        await ctx.reply(f"I'm afraid {self.args} is not a valid Agent!")
+        return True
 
 
 class MapNotFoundError(ValorantError):
-    pass
+
+    async def handler(self, ctx: commands.Context) -> bool:
+        await ctx.reply(f"I'm afraid {self.args} is not a valid Map!")
+        return True
 
 
 class InvalidAgentValueError(ValorantError):
-    pass
 
-
-async def handler(ctx: commands.Context, error: Exception) -> bool:
-
-    if isinstance(error, AgentNotFoundError):
-        await ctx.reply(f"I'm afraid {error.args} is not a valid Agent!")
+    async def handler(self, ctx: commands.Context) -> bool:
+        await ctx.reply(f"I'm afraid {self.args} is not a valid Agent Value!")
         return True
-
-    if isinstance(error, MapNotFoundError):
-        await ctx.reply(f"I'm afraid {error.args} is not a valid Map!")
-        return True
-
-    if isinstance(error, InvalidAgentValueError):
-        await ctx.reply(f"I'm afraid {error.args} is not a valid Agent Value!")
-        return True
-
-    return False
