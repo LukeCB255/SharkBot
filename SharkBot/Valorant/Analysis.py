@@ -9,11 +9,16 @@ analysisPath = "data/live/valorant/analysis.json"
 class Analysis:
 
     def __init__(self, data: dict[str, dict[str, list[int]]]):
-        self.data = {
+        self.data: dict[Map, dict[Agent, list[int]]] = {
             Map.get(mapName): {
                 Agent.get(agentName): agentData for agentName, agentData in mapData.items()
             } for mapName, mapData in data.items()
         }
+
+    def get_map_data(self, map: Map) -> dict[Agent, list[int]]:
+        if map not in self.data.keys():
+            raise Errors.MapNotFoundError(map.name)
+        return self.data[map]
 
 
 _analysis = None
