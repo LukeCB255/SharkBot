@@ -49,8 +49,9 @@ class Errors(commands.Cog):
             await ctx.send("I'm afraid you don't have permission to do that!")
             return
 
-        if await SharkBot.Valorant.Errors.handler(ctx, error):
-            return
+        if isinstance(error, SharkBot.Errors.SharkError):
+            if await error.handler(ctx):
+                return
 
         errorType = type(error)
         errorName = f"{errorType.__module__}.{errorType.__name__}{error.args}"
