@@ -1,4 +1,5 @@
 import os
+import json
 
 from SharkBot.Valorant import Errors, Map, Agent
 
@@ -13,6 +14,21 @@ class Analysis:
                 Agent.get(agentName): agentData for agentName, agentData in mapData.items()
             } for mapName, mapData in data.items()
         }
+
+
+_analysis = None
+
+
+def get() -> Analysis:
+    global _analysis
+    if _analysis is not None:
+        return _analysis
+    if not os.path.exists(analysisPath):
+        raise Errors.NoAnalysisFileError()
+    with open(analysisPath, "r") as infile:
+        analysisData: dict[str, dict[str, list[int]]] = json.load(infile)
+    _analysis = Analysis(analysisData)
+    return _analysis
 
 
 if not os.path.exists("/".join(analysisPath.split("/")[:-1])):
