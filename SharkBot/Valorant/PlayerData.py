@@ -1,4 +1,4 @@
-from SharkBot import Valorant, SharkErrors
+from SharkBot import Valorant, Errors
 
 
 class PlayerData:
