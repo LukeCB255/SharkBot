@@ -1,4 +1,8 @@
+import os
+
 from SharkBot.Valorant import Errors, Map, Agent
+
+analysisPath = "data/live/valorant/analysis.json"
 
 
 class Analysis:
@@ -10,3 +14,6 @@ class Analysis:
             } for mapName, mapData in data.items()
         }
 
+
+if not os.path.exists("/".join(analysisPath.split("/")[:-1])):
+    os.makedirs("/".join(analysisPath.split("/")[:-1]))
