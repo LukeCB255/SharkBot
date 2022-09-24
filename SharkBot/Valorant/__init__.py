@@ -3,6 +3,7 @@ from .Agent import Agent
 from .Map import Map
 from .PlayerData import PlayerData
 from . import Analysis
+from . import Views
 
 agents = Agent.agents
 maps = Map.maps
