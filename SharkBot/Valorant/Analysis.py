@@ -20,6 +20,13 @@ class Analysis:
             raise Errors.MapNotFoundError(map.name)
         return self.data[map]
 
+    def get_agent_data(self, agent: Agent) -> dict[Map, list[int]]:
+        data = {}
+        for map, mapData in self.data.items():
+            if agent in mapData.keys():
+                data[map] = mapData[agent]
+        return data
+
 
 _analysis = None
 
