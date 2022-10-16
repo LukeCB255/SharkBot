@@ -74,7 +74,7 @@ class Collectibles(commands.Cog):
         for data in embedData:
             embed = discord.Embed()
             embed.description = f"Balance: ${member.balance}"
-            embed.set_thumbnail(url=ctx.author.avatar.url)
+            embed.set_thumbnail(url=ctx.author.display_avatar.url)
 
             for collectionData in data:
                 collection = collectionData[0]
@@ -131,9 +131,11 @@ class Collectibles(commands.Cog):
         for member in members:
             for item in items:
                 member.inventory.add(item)
-                member.write_data()
-
         await ctx.send(f"Granted {[item.name for item in items]} each to {len(members)} members.")
+
+        for member in members:
+            member.write_data()
+
 
     @commands.command()
     async def open(self, ctx: commands.Context, boxType: str = "all") -> None:
@@ -186,7 +188,7 @@ class Collectibles(commands.Cog):
                 embed.description = f"You got *{item.text}*!"
             embed.colour = item.collection.colour
             embed.set_footer(text=item.description)
-            embed.set_author(name=ctx.author.display_name, icon_url=ctx.author.avatar.url)
+            embed.set_author(name=ctx.author.display_name, icon_url=ctx.author.display_avatar.url)
 
             await ctx.reply(embed=embed, mention_author=False)
 
@@ -199,7 +201,7 @@ class Collectibles(commands.Cog):
         embed = discord.Embed()
         embed.title = "Claim All"
         embed.colour = discord.Colour.blurple()
-        embed.set_thumbnail(url=ctx.author.avatar.url)
+        embed.set_thumbnail(url=ctx.author.display_avatar.url)
         embedText = "Free shit!"
 
         claimedBoxes = []
@@ -281,10 +283,10 @@ class Collectibles(commands.Cog):
 
         view = Views.ClaimView(claimedBoxes, ctx.author.id, embed) if claimedBoxes else None
 
-        await ctx.reply(embed=embed, view=view)
+        await ctx.reply(embed=embed, view=view, mention_author=False)
 
         if claimedBoxes:
-            await member.missions.log_action("claim", ctx.author)
+            await member.missions.log_action("claim", ctx)
             member.stats.claims += 1
             member.stats.claimedBoxes += len(claimedBoxes)
 
@@ -362,7 +364,7 @@ class Collectibles(commands.Cog):
 
             embed = discord.Embed()
             embed.title = f"{ctx.author.display_name}'s Collection"
-            embed.set_thumbnail(url=ctx.author.avatar.url)
+            embed.set_thumbnail(url=ctx.author.display_avatar.url)
 
             totalItems = 0
 
@@ -386,11 +388,10 @@ class Collectibles(commands.Cog):
 
         elif args[0] in ["full", "*", "all"]:  # Full Collections Format
 
-            embeds = []
-            embeds.append(discord.Embed())
+            embeds = [discord.Embed()]
             embeds[0].title = f"{ctx.author.display_name}'s Collection"
             embeds[0].description = f"{len(member.collection.items)} items discovered."
-            embeds[0].set_thumbnail(url=ctx.author.avatar.url)
+            embeds[0].set_thumbnail(url=ctx.author.display_avatar.url)
 
             length = 0
 
@@ -412,7 +413,7 @@ class Collectibles(commands.Cog):
                     embeds.append(discord.Embed())
                     embeds[-1].title = f"{ctx.author.display_name}'s Collection"
                     embeds[-1].description = f"{len(member.collection.items)} items discovered."
-                    embeds[-1].set_thumbnail(url=ctx.author.avatar.url)
+                    embeds[-1].set_thumbnail(url=ctx.author.display_avatar.url)
 
                 embeds[-1].add_field(
                     name=f"{icon}  {collection.name} ({collectionItemsDiscovered}/{len(collection.collection)})",
@@ -420,7 +421,7 @@ class Collectibles(commands.Cog):
 
             if len(embeds) > 1:
                 for embed in embeds:
-                    embed.title = f"{ctx.author.display_name}'s Collection (Page {embeds.index(embed) + 1}/{len(embeds)})"
+                    embed.title = f"{ctx.author.display_name}'s Collection ({embeds.index(embed) + 1}/{len(embeds)})"
 
             for embed in embeds:
                 await ctx.reply(embed=embed, mention_author=False)
@@ -430,7 +431,7 @@ class Collectibles(commands.Cog):
             collectionsToShow = []
             for collectionName in args:
                 for collection in Collection.collections:
-                    if collectionName.lower() == collection.name.lower():
+                    if collectionName.lower() == collection.name.lower() or collectionName.upper() == collection.id:
                         collectionsToShow.append(collection)
                         break
 
@@ -441,11 +442,10 @@ class Collectibles(commands.Cog):
 
             collectionsToShow = list(set(collectionsToShow))
 
-            embeds = []
-            embeds.append(discord.Embed())
+            embeds = [discord.Embed()]
             embeds[0].title = f"{ctx.author.display_name}'s Collection"
             embeds[0].description = f"{len(member.collection.items)} items discovered."
-            embeds[0].set_thumbnail(url=ctx.author.avatar.url)
+            embeds[0].set_thumbnail(url=ctx.author.display_avatar.url)
 
             length = 0
 
@@ -467,7 +467,7 @@ class Collectibles(commands.Cog):
                     embeds.append(discord.Embed())
                     embeds[-1].title = f"{ctx.author.display_name}'s Collection"
                     embeds[-1].description = f"{len(member.collection.items)} items discovered."
-                    embeds[-1].set_thumbnail(url=ctx.author.avatar.url)
+                    embeds[-1].set_thumbnail(url=ctx.author.display_avatar.url)
 
                 embeds[-1].add_field(
                     name=f"{icon}  {collection.name} ({collectionItemsDiscovered}/{len(collection.items)})",
@@ -475,7 +475,7 @@ class Collectibles(commands.Cog):
 
             if len(embeds) > 1:
                 for embed in embeds:
-                    embed.title = f"{ctx.author.display_name}'s Collection (Page {embeds.index(embed) + 1}/{len(embeds)})"
+                    embed.title = f"{ctx.author.display_name}'s Collection ({embeds.index(embed) + 1}/{len(embeds)})"
 
             for embed in embeds:
                 await ctx.reply(embed=embed, mention_author=False)

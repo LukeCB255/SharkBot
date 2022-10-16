@@ -15,3 +15,18 @@ class LostSectorNotFoundError(SharkError):
 
 class LostSectorRewardNotFoundError(SharkError):
     pass
+
+
+class DungeonNotFoundError(SharkError):
+    pass
+
+
+class RaidNotFoundError(SharkError):
+    pass
+
+
+class NightfallNotFoundError(SharkError):
+
+    async def handler(self, ctx):
+        await ctx.send("I couldn't find that Nightfall!")
+        return True

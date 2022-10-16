@@ -1,5 +1,8 @@
 from datetime import datetime, timedelta, date
 
+from discord.ext import commands
+
+import SharkBot.IDs
 from SharkBot.Views import MissionCompleteView
 from SharkBot import Item, Errors
 from typing import Union
@@ -182,7 +185,7 @@ class MemberMissions:
     def get_of_action(self, action: str) -> list[MemberMission]:
         return [mission for mission in self.missions if mission.action == action]
 
-    async def log_action(self, action: str, user: discord.Member):
+    async def log_action(self, action: str, ctx: commands.Context):
         for mission in [mission for mission in self.missions if mission.action == action]:
             mission.progress += 1
             if mission.can_claim:
@@ -198,7 +201,21 @@ class MemberMissions:
                 )
 
                 view = MissionCompleteView(mission.rewards, self.member, embed)
-                await user.send(embed=embed, view=view)
+                await ctx.reply(embed=embed, view=view, mention_author=False)
+
+        self.member.write_data()
+
+    async def log_action_small(self, action: str, message: discord.Message):
+        for mission in [mission for mission in self.missions if mission.action == action]:
+            mission.progress += 1
+            if mission.can_claim:
+                mission.claim_rewards()
+
+                await message.reply(
+                    f"{mission.type} Mission Complete - *{mission.description}*\nYou got: {mission.rewards_text}!",
+                    mention_author=False
+                )
+
         self.member.write_data()
 
     @property

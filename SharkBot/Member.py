@@ -2,7 +2,7 @@ import json
 import os
 from datetime import datetime, timedelta
 
-from SharkBot import Cooldown, MemberInventory, MemberCollection, Mission, MemberStats, Valorant
+from SharkBot import Cooldown, MemberInventory, MemberCollection, Mission, MemberStats, Utils, Valorant
 from SharkBot.Handlers import firestoreHandler
 
 birthdayFormat = "%d/%m/%Y"
@@ -19,8 +19,8 @@ class Member:
 
         self.id: int = member_data["id"]
         self.balance: int = member_data["balance"]
-        self.inventory = MemberInventory.MemberInventory(self, member_data["inventory"])
-        self.collection = MemberCollection.MemberCollection(self, member_data["collection"])
+        self.inventory = MemberInventory(self, member_data["inventory"])
+        self.collection = MemberCollection(self, member_data["collection"])
         self.counts: int = member_data["counts"]
         self.cooldowns = {
             "hourly": Cooldown.Cooldown("hourly", member_data["cooldowns"]["hourly"], timedelta(hours=1)),
@@ -33,7 +33,7 @@ class Member:
         else:
             self.birthday = datetime.strptime(member_data["birthday"], birthdayFormat)
         self.lastClaimedBirthday: int = member_data["lastClaimedBirthday"]
-        self.stats = MemberStats.MemberStats(member_data["stats"])
+        self.stats = MemberStats(member_data["stats"])
         self.valorant = Valorant.PlayerData(member_data["valorant"])
 
     def write_data(self, upload: bool = True) -> None:
@@ -115,8 +115,8 @@ defaultValues = {
 def load_member_files() -> None:
     global members
     members = {}
-    for filename in os.listdir(membersDirectory):
-        with open(f"{membersDirectory}/{filename}", "r") as infile:
+    for filename in Utils.get_dir_filepaths(membersDirectory, ".json"):
+        with open(filename, "r") as infile:
             data = json.load(infile)
             member = Member(data)
             members[int(data["id"])] = member
