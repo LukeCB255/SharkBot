@@ -12,6 +12,16 @@ class Valorant(commands.Cog):
 	async def val(self, ctx: commands.Context):
 		await ctx.send("Valorant Command")
 
+	@val.command()
+	async def upload(self, ctx: commands.Context):
+		if len(ctx.message.attachments) == 0:
+			await ctx.send("You didn't attach any files...")
+			return
+		for file in ctx.message.attachments:
+			with open(f"data/live/valorant/{file.filename}", "wb+") as outfile:
+				outfile.write(await file.read())
+		await ctx.send(f"Saved {len(ctx.message.attachments)} files to `data/live/valorant`")
+
 		
 async def setup(bot):
 	await bot.add_cog(Valorant(bot))
