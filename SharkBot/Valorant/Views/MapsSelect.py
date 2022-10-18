@@ -12,4 +12,4 @@ class MapsSelect(discord.ui.Select):
         super().__init__(options=options)
 
     async def callback(self, interaction: discord.Interaction) -> None:
-        await self.view.mapSelected(interaction, self.values[0])
+        await self.view.map_selected(interaction, self.values[0])

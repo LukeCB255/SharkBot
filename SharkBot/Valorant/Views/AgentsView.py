@@ -10,7 +10,7 @@ class AgentsView(discord.ui.View):
         self.embed = embed
         self.add_item(MapsSelect())
 
-    async def mapSelected(self, interaction: discord.Interaction, mapName: str) -> None:
+    async def map_selected(self, interaction: discord.Interaction, mapName: str) -> None:
         if interaction.user.id != self.member.id:
             return
         selectedMap = Valorant.Map.get(mapName)
