@@ -15,7 +15,7 @@ class Valorant(commands.Cog):
         baseCommands = ""
         baseCommands += f"agents: view and modify your agent preferences\n"
         embed.add_field(name="Commands", value=baseCommands)
-        if ctx.author.get_role(IDs.roles["Mod"]) != None:
+        if ctx.author.get_role(IDs.roles["Mod"]) is not None:
             adminCommands = ""
             adminCommands += f"upload: replace analysis.json\n"
             embed.add_field(name="Admin commands", value=adminCommands, inline=False)
