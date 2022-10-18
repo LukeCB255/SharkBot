@@ -1,5 +1,5 @@
 import discord
-from SharkBot import Valorant, Member
+from SharkBot import Valorant
 
 options = []
 for map in Valorant.maps:
@@ -8,9 +8,8 @@ for map in Valorant.maps:
 
 
 class MapsSelect(discord.ui.Select):
-    def __init__(self, member: Member):
+    def __init__(self):
         super().__init__(options=options)
-        self.member = member
 
     async def callback(self, interaction: discord.Interaction) -> None:
         await self.view.mapSelected(interaction, self.values[0])
