@@ -8,7 +8,7 @@ class AgentsView(discord.ui.View):
         super().__init__(timeout=timeout)
         self.member = Member.get(memberid)
         self.embed = embed
-        self.add_item(MapsSelect(self.member))
+        self.add_item(MapsSelect())
 
     async def mapSelected(self, interaction: discord.Interaction, mapName: str) -> None:
         if interaction.user.id != self.member.id:
