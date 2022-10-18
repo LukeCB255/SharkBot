@@ -34,12 +34,9 @@ class Valorant(commands.Cog):
 
     @val.command()
     async def agents(self, ctx: commands.Context) -> None:
-        member = Member.get(ctx.author.id)
-        memval = member.valorant
-        data = memval.raw_data
         embed = discord.Embed(colour=V.valorantRed)
         embed.title = "Select a map to view/modify"
-        view = V.Views.AgentsView(member.id, embed)
+        view = V.Views.AgentsView(ctx.author.id, embed)
         await ctx.reply(embed=embed, view=view, mention_author=False)
 
 
