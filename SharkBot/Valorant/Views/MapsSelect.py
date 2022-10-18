@@ -1,5 +1,5 @@
 import discord
-from SharkBot import Valorant
+from SharkBot import Valorant, Member
 
 options = []
 for map in Valorant.maps:
@@ -8,7 +8,7 @@ for map in Valorant.maps:
 
 
 class MapsSelect(discord.ui.Select):
-    def __init__(self, member):
+    def __init__(self, member: Member):
         super().__init__(options=options)
         self.member = member
 
