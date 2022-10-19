@@ -1,6 +1,7 @@
 import discord
 from SharkBot import Member, Valorant, Utils
 from .MapsSelect import MapsSelect
+from .AgentsSelect import AgentsSelect
 
 
 class AgentsView(discord.ui.View):
@@ -15,6 +16,7 @@ class AgentsView(discord.ui.View):
             await interaction.response.defer()
             return
 
+        self.clear_items()
         selected_map = Valorant.Map.get(map_name)
         length = 17 + len(map_name)
         agents = [[agent.name, self.member.valorant.get_agent_value(agent, selected_map)] for agent in Valorant.agents]
@@ -24,6 +26,14 @@ class AgentsView(discord.ui.View):
         agent_str = f"```{agent_str}```"
 
         self.embed.title = f"Agent preferences for {map_name}"
-        self.embed.description = agent_str
+        self.embed.description = f"Select an agent to modify that preference.\n{agent_str}"
 
-        await interaction.response.edit_message(embed=self.embed, view=None)
+        self.add_item(AgentsSelect())
+
+        await interaction.response.edit_message(embed=self.embed, view=self)
+
+    async def agent_selected(self, interaction: discord.Interaction, agent: str) -> None:
+        if interaction.user.id != self.member.id:
+            await interaction.response.defer()
+            return
+        await interaction.response.defer()
