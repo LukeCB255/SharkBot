@@ -29,6 +29,11 @@ class PlayerData:
         else:
             return Valorant.defaultAgentValue
 
+    def get_agent_values(self, map: Valorant.Map) -> dict[Valorant.Agent, int]:
+        return {
+            agent: self.get_agent_value(agent, map) for agent in Valorant.agents
+        }
+
     def set_agent_value(self, agent: Valorant.Agent, map: Valorant.Map, value: int):
         if value < Valorant.defaultAgentValue or value > Valorant.maxAgentValue:
             raise Valorant.Errors.InvalidAgentValueError(value)
@@ -37,3 +42,4 @@ class PlayerData:
             self.data[map] = {}
 
         self.data[map][agent] = value
+
