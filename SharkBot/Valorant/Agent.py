@@ -21,6 +21,9 @@ class Agent:
         else:
             raise Valorant.Errors.AgentNotFoundError(search)
 
+    def __str__(self) -> str:
+        return self.name
+
 
 def load_agents() -> None:
     Agent.agents.clear()

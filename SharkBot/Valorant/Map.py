@@ -19,6 +19,9 @@ class Map:
         else:
             raise Valorant.Errors.MapNotFoundError(search)
 
+    def __str__(self) -> str:
+        return self.name
+
 
 def load_maps() -> None:
     Map.maps.clear()
