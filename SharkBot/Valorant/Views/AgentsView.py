@@ -53,7 +53,7 @@ class AgentsView(discord.ui.View):
 
         await interaction.response.edit_message(embed=self.embed, view=self)
 
-    async def value_selected(self, interaction, value: int):
+    async def value_selected(self, interaction: discord.Interaction, value: int) -> None:
         if interaction.user.id != self.member.id:
             await interaction.response.defer()
             return
