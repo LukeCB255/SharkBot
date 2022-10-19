@@ -8,7 +8,7 @@ length = 29
 
 
 class AgentsView(discord.ui.View):
-    def __init__(self, member_id: int, embed: discord.Embed, timeout=120):
+    def __init__(self, member_id: int, target: int, embed: discord.Embed, timeout=120):
         super().__init__(timeout=timeout)
         self.member = Member.get(member_id)
         self.embed = embed

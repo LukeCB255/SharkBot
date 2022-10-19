@@ -18,6 +18,7 @@ class Valorant(commands.Cog):
         if ctx.author.get_role(IDs.roles["Mod"]) is not None:
             admin_commands = ""
             admin_commands += f"upload: replace analysis.json\n"
+            admin_commands += f"m_agents: view and modify other people's preferences\n"
             embed.add_field(name="Admin commands", value=admin_commands, inline=False)
         await ctx.reply(embed=embed, mention_author=False)
 
@@ -36,7 +37,15 @@ class Valorant(commands.Cog):
     async def agents(self, ctx: commands.Context) -> None:
         embed = discord.Embed(colour=Val.valorantRed)
         embed.title = "Select a map to view/modify"
-        view = Val.Views.AgentsView(ctx.author.id, embed)
+        view = Val.Views.AgentsView(ctx.author.id, ctx.author.id, embed)
+        await ctx.reply(embed=embed, view=view, mention_author=False)
+
+    @val.command()
+    @commands.has_role(IDs.roles["Mod"])
+    async def m_agents(self, ctx: commands.Context, target: discord.Member) -> None:
+        embed = discord.Embed(colour=Val.valorantRed)
+        embed.title = "Map"
+        view = Val.Views.AgentsView(ctx.author.id, target.id, embed)
         await ctx.reply(embed=embed, view=view, mention_author=False)
 
 
