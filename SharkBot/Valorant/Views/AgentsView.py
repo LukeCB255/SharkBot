@@ -1,7 +1,10 @@
 import discord
-from SharkBot import Member, Valorant, Utils
+from SharkBot import Member, Valorant
 from .MapsSelect import MapsSelect
 from .AgentsSelect import AgentsSelect
+from .ValueSelect import ValueSelect
+
+length = 29
 
 
 class AgentsView(discord.ui.View):
@@ -9,6 +12,8 @@ class AgentsView(discord.ui.View):
         super().__init__(timeout=timeout)
         self.member = Member.get(member_id)
         self.embed = embed
+        self.map = None
+        self.agent = None
         self.add_item(MapsSelect())
 
     async def map_selected(self, interaction: discord.Interaction, map_name: str) -> None:
@@ -17,9 +22,9 @@ class AgentsView(discord.ui.View):
             return
 
         self.clear_items()
-        selected_map = Valorant.Map.get(map_name)
-        length = 17 + len(map_name)
-        agents = [[agent.name, self.member.valorant.get_agent_value(agent, selected_map)] for agent in Valorant.agents]
+
+        self.map = Valorant.Map.get(map_name)
+        agents = [[agent.name, self.member.valorant.get_agent_value(agent, self.map)] for agent in Valorant.agents]
         agents.sort(key=lambda x: x[1], reverse=True)
 
         agent_str = "\n".join([f"{f'{a[0]}:'.ljust(length)}{a[1]}" for a in agents])
@@ -36,4 +41,28 @@ class AgentsView(discord.ui.View):
         if interaction.user.id != self.member.id:
             await interaction.response.defer()
             return
-        await interaction.response.defer()
+
+        self.clear_items()
+
+        self.agent = Valorant.Agent.get(agent)
+        value = self.member.valorant.get_agent_value(self.agent, self.map)
+        self.embed.title = f"{agent} preference for {self.map.name}"
+        self.embed.description = f"Select a value to modify your preference.\n```{agent}: {value}```"
+
+        self.add_item(ValueSelect())
+
+        await interaction.response.edit_message(embed=self.embed, view=self)
+
+    async def value_selected(self, interaction, value: int):
+        if interaction.user.id != self.member.id:
+            await interaction.response.defer()
+            return
+
+        self.clear_items()
+
+        self.member.valorant.set_agent_value(self.agent, self.map, value)
+        self.embed.description = f"Value set.\n```{self.agent.name}: {value}```"
+
+        await interaction.response.edit_message(embed=self.embed, view=None)
+
+        self.member.write_data()
