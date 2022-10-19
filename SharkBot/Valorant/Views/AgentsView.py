@@ -17,14 +17,11 @@ class AgentsView(discord.ui.View):
 
         selected_map = Valorant.Map.get(map_name)
         length = 17 + len(map_name)
-
-        agent_str = "```"
         agents = [[agent.name, self.member.valorant.get_agent_value(agent, selected_map)] for agent in Valorant.agents]
         agents.sort(key=lambda x: x[1], reverse=True)
-        for i in agents:
-            name = f"{i[0]}:"
-            agent_str += f"{name.ljust(length)}{i[1]}\n"
-        agent_str += "```"
+
+        agent_str = "\n".join([f"{f'{a[0]}:'.ljust(length)}{a[1]}" for a in agents])
+        agent_str = f"```{agent_str}```"
 
         self.embed.title = f"Agent preferences for {map_name}"
         self.embed.description = agent_str
