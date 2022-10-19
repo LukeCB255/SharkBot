@@ -37,17 +37,17 @@ class AgentsView(discord.ui.View):
 
         await interaction.response.edit_message(embed=self.embed, view=self)
 
-    async def agent_selected(self, interaction: discord.Interaction, agent: str) -> None:
+    async def agent_selected(self, interaction: discord.Interaction, agent_name: str) -> None:
         if interaction.user.id != self.member.id:
             await interaction.response.defer()
             return
 
         self.clear_items()
 
-        self.agent = Valorant.Agent.get(agent)
+        self.agent = Valorant.Agent.get(agent_name)
         value = self.member.valorant.get_agent_value(self.agent, self.map)
-        self.embed.title = f"{agent} preference for {self.map.name}"
-        self.embed.description = f"Select a value to modify your preference.\n```{agent}: {value}```"
+        self.embed.title = f"{agent_name} preference for {self.map.name}"
+        self.embed.description = f"Select a value to modify your preference.\n```{agent_name}: {value}```"
 
         self.add_item(ValueSelect())
 
