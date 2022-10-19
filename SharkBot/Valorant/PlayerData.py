@@ -18,6 +18,14 @@ class PlayerData:
             } for map, mapData in self.data.items()
         }
 
+    @property
+    def full_raw_data(self) -> dict[str, dict[str, int]]:
+        return {
+            map.name: {
+                agent.name: self.get_agent_value(map, agent) for agent in Valorant.agents
+            } for map in Valorant.maps
+        }
+
     def get_agent_value(self, agent: Valorant.Agent, map: Valorant.Map) -> int:
         if map not in self.data.keys():
             map = Valorant.maps[0]
