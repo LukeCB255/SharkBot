@@ -1,6 +1,6 @@
 import discord
 from discord.ext import tasks, commands
-from SharkBot import Member, IDs, Valorant as V
+from SharkBot import Member, IDs, Valorant as Val
 
 
 class Valorant(commands.Cog):
@@ -10,15 +10,15 @@ class Valorant(commands.Cog):
 
     @commands.hybrid_group()
     async def val(self, ctx: commands.Context) -> None:
-        embed = discord.Embed(colour=V.valorantRed)
+        embed = discord.Embed(colour=Val.valorantRed)
         embed.title = "Val Commands"
-        baseCommands = ""
-        baseCommands += f"agents: view and modify your agent preferences\n"
-        embed.add_field(name="Commands", value=baseCommands)
+        base_commands = ""
+        base_commands += f"agents: view and modify your agent preferences\n"
+        embed.add_field(name="Commands", value=base_commands)
         if ctx.author.get_role(IDs.roles["Mod"]) is not None:
-            adminCommands = ""
-            adminCommands += f"upload: replace analysis.json\n"
-            embed.add_field(name="Admin commands", value=adminCommands, inline=False)
+            admin_commands = ""
+            admin_commands += f"upload: replace analysis.json\n"
+            embed.add_field(name="Admin commands", value=admin_commands, inline=False)
         await ctx.reply(embed=embed, mention_author=False)
 
     @val.command()
@@ -34,9 +34,9 @@ class Valorant(commands.Cog):
 
     @val.command()
     async def agents(self, ctx: commands.Context) -> None:
-        embed = discord.Embed(colour=V.valorantRed)
+        embed = discord.Embed(colour=Val.valorantRed)
         embed.title = "Select a map to view/modify"
-        view = V.Views.AgentsView(ctx.author.id, embed)
+        view = Val.Views.AgentsView(ctx.author.id, embed)
         await ctx.reply(embed=embed, view=view, mention_author=False)
 
 
