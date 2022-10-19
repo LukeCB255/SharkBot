@@ -1,6 +1,6 @@
 import discord
 
-options = [discord.SelectOption(label=a) for a in range(1, 6)]
+options = [discord.SelectOption(label=str(a)) for a in range(1, 6)]
 
 
 class ValueSelect(discord.ui.Select):
