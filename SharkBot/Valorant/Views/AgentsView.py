@@ -14,6 +14,7 @@ class AgentsView(discord.ui.View):
         if interaction.user.id != self.member.id:
             await interaction.response.defer()
             return
+
         selected_map = Valorant.Map.get(map_name)
         self.embed.title = f"Agent preferences for {map_name}"
         agents = []
