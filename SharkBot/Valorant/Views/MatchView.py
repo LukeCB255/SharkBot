@@ -4,9 +4,10 @@ from .MapsSelect import MapsSelect
 
 
 class MatchView(discord.ui.View):
-    def __init__(self, member_id: int, embed: discord.Embed, timeout=120):
+    def __init__(self, member_id: int, players: list[int], embed: discord.Embed, timeout=120):
         super().__init__(timeout=timeout)
         self.member = Member.get(member_id)
+        self.players = [Member.get(player_id) for player_id in players]
         self.embed = embed
         self.map = None
         self.add_item(MapsSelect(False))
@@ -19,5 +20,6 @@ class MatchView(discord.ui.View):
         self.clear_items()
 
         self.embed.title = f"{self.embed.title} on {map_name}"
+        self.map = Valorant.Map.get(map_name)
 
         await interaction.response.edit_message(embed=self.embed, view=self)
