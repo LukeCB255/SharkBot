@@ -83,9 +83,11 @@ class AgentsView(discord.ui.View):
 
         self.clear_items()
 
+        self.add_item(BackButton("map_select", "Back to Start"))
+
         self.target.valorant.set_agent_value(self.agent, self.map, value)
         self.embed.description = f"Value set.\n```{self.agent.name}: {value}```"
 
-        await interaction.response.edit_message(embed=self.embed, view=None)
+        await interaction.response.edit_message(embed=self.embed, view=self)
 
         self.target.write_data()
