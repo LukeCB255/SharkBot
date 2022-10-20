@@ -83,7 +83,7 @@ class AgentsView(discord.ui.View):
 
         self.clear_items()
 
-        self.add_item(BackButton("map_select", "Back to Start"))
+        self.add_item(BackButton("agent_select"))
 
         self.target.valorant.set_agent_value(self.agent, self.map, value)
         self.embed.description = f"Value set.\n```{self.agent.name}: {value}```"
