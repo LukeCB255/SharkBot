@@ -15,4 +15,9 @@ class MatchView(discord.ui.View):
         if interaction.user.id != self.member.id:
             await interaction.response.defer()
             return
-        await interaction.response.defer()
+
+        self.clear_items()
+
+        self.embed.title = f"{self.embed.title} on {map_name}"
+
+        await interaction.response.edit_message(embed=self.embed, view=self)
