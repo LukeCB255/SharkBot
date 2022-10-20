@@ -1,7 +1,7 @@
 import discord
 from SharkBot import Valorant
 
-options = [discord.SelectOption(label=map.name) for map in Valorant.maps]
+options = [discord.SelectOption(label=map.name) for map in Valorant.Map.maps]
 
 
 class MapsSelect(discord.ui.Select):

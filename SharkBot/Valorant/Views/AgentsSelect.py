@@ -1,7 +1,7 @@
 import discord
 from SharkBot import Valorant
 
-options = [discord.SelectOption(label=agent.name) for agent in Valorant.agents]
+options = [discord.SelectOption(label=agent.name) for agent in Valorant.Agent.agents]
 
 
 class AgentsSelect(discord.ui.Select):
