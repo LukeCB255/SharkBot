@@ -64,7 +64,7 @@ class Valorant(commands.Cog):
                 player_ids.append(player.id)
             else:
                 break
-        player_ids = list(dict.fromkeys(player_ids))
+        player_ids = list(set(player_ids))
 
         known_list = [ctx.guild.get_member(player_id) for player_id in player_ids]
         known = len(known_list)
