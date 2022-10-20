@@ -58,21 +58,12 @@ class Valorant(commands.Cog):
                     player5: discord.Member = None) -> None:
 
         player_list = [player1, player2, player3, player4, player5]
-        player_ids = list(set([player.id for player in player_list if player is not None]))
-
-        known_list = [ctx.guild.get_member(player_id) for player_id in player_ids]
-        known = len(known_list)
-
-        player_list = list(known_list)
-        while len(player_list) < 5:
-            player_list.append(None)
+        known_list = [player for player in player_list if player is not None]
 
         embed = discord.Embed(colour=Val.valorantRed)
-        embed.title = f"Valorant Match of {known} premades"
-        embed.description = ""
-        for player in known_list:
-            print(player)
-            embed.description += f"{player.name}\n"
+        embed.title = f"Valorant Match of {len(known_list)} premades"
+        embed.description = "\n".join([player.name for player in known_list])
+
         view = Val.Views.MatchView(ctx.author.id, embed)
         await ctx.reply(embed=embed, view=view, mention_author=False)
 
