@@ -14,6 +14,7 @@ class Valorant(commands.Cog):
         embed.title = "Val Commands"
         base_commands = ""
         base_commands += f"agents: view and modify your agent preferences\n"
+        base_commands += f"match: get comp recommendations for your match.\n"
         embed.add_field(name="Commands", value=base_commands)
         if ctx.author.get_role(IDs.roles["Mod"]) is not None:
             admin_commands = ""
