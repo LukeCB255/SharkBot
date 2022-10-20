@@ -3,6 +3,7 @@ from SharkBot import Member, Valorant
 from .MapsSelect import MapsSelect
 from .AgentsSelect import AgentsSelect
 from .ValueSelect import ValueSelect
+from .BackButton import BackButton
 
 length = 29
 
@@ -17,12 +18,31 @@ class AgentsView(discord.ui.View):
         self.agent = None
         self.add_item(MapsSelect())
 
+    async def go_back(self, interaction: discord.Interaction, state: str) -> None:
+        if interaction.user.id != self.member.id:
+            await interaction.response.defer()
+            return
+
+        if state == "map_select":
+            self.map = None
+            self.clear_items()
+            self.add_item(MapsSelect())
+            self.embed.title = "Select a map to view/modify"
+            self.embed.description = None
+            await interaction.response.edit_message(embed=self.embed, view=self)
+
+        elif state == "agent_select":
+            self.agent = None
+            await self.map_selected(interaction, self.map.name)
+
     async def map_selected(self, interaction: discord.Interaction, map_name: str) -> None:
         if interaction.user.id != self.member.id:
             await interaction.response.defer()
             return
 
         self.clear_items()
+
+        self.add_item(BackButton("map_select"))
 
         self.map = Valorant.Map.get(map_name)
         agents = [[agent.name, self.target.valorant.get_agent_value(agent, self.map)] for agent in Valorant.agents]
@@ -44,6 +64,8 @@ class AgentsView(discord.ui.View):
             return
 
         self.clear_items()
+
+        self.add_item(BackButton("agent_select"))
 
         self.agent = Valorant.Agent.get(agent_name)
         value = self.target.valorant.get_agent_value(self.agent, self.map)
