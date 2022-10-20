@@ -58,13 +58,7 @@ class Valorant(commands.Cog):
                     player5: discord.Member = None) -> None:
 
         player_list = [player1, player2, player3, player4, player5]
-        player_ids = []
-        for player in player_list:
-            if player is not None:
-                player_ids.append(player.id)
-            else:
-                break
-        player_ids = list(set(player_ids))
+        player_ids = list(set([player.id for player in player_list if player is not None]))
 
         known_list = [ctx.guild.get_member(player_id) for player_id in player_ids]
         known = len(known_list)
