@@ -9,7 +9,7 @@ class MatchView(discord.ui.View):
         self.member = Member.get(member_id)
         self.embed = embed
         self.map = None
-        self.add_item(MapsSelect(True))
+        self.add_item(MapsSelect(False))
 
     async def map_selected(self, interaction: discord.Interaction, map_name: str) -> None:
         if interaction.user.id != self.member.id:
