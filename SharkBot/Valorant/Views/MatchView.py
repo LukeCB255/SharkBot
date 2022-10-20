@@ -18,4 +18,6 @@ class MatchView(discord.ui.View):
 
         self.clear_items()
 
-        await interaction.response.defer()
+        self.embed.title = f"{self.embed.title} on {map_name}"
+
+        await interaction.response.edit_message(embed=self.embed, view=self)
