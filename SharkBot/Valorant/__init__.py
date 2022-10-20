@@ -2,6 +2,7 @@ from . import Errors
 from .Agent import Agent
 from .Map import Map
 from .PlayerData import PlayerData
+from .Match import Match
 from . import Analysis
 from . import Views
 

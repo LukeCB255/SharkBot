@@ -22,4 +22,6 @@ class MatchView(discord.ui.View):
         self.embed.title = f"{self.embed.title} on {map_name}"
         self.map = Valorant.Map.get(map_name)
 
+        Valorant.Match(self.map)
+
         await interaction.response.edit_message(embed=self.embed, view=self)
