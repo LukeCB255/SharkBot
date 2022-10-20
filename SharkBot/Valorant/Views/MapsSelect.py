@@ -5,7 +5,9 @@ options = [discord.SelectOption(label=map.name) for map in Valorant.Map.maps]
 
 
 class MapsSelect(discord.ui.Select):
-    def __init__(self):
+    def __init__(self, rem_all: bool = False):
+        if rem_all:
+            options.remove(options[0])
         super().__init__(options=options)
 
     async def callback(self, interaction: discord.Interaction) -> None:

@@ -79,7 +79,8 @@ class Valorant(commands.Cog):
         for player in known_list:
             print(player)
             embed.description += f"{player.name}\n"
-        await ctx.reply(embed=embed, mention_author=False)
+        view = Val.Views.MatchView(ctx.author.id, embed)
+        await ctx.reply(embed=embed, view=view, mention_author=False)
 
 
 async def setup(bot):
