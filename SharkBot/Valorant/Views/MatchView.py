@@ -15,4 +15,7 @@ class MatchView(discord.ui.View):
         if interaction.user.id != self.member.id:
             await interaction.response.defer()
             return
+
+        self.clear_items()
+
         await interaction.response.defer()
