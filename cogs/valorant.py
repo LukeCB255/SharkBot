@@ -48,6 +48,38 @@ class Valorant(commands.Cog):
         view = Val.Views.AgentsView(ctx.author.id, target.id, embed)
         await ctx.reply(embed=embed, view=view, mention_author=False)
 
+    @val.command()
+    async def match(self, ctx: commands.Context,
+                    player1: discord.Member = None,
+                    player2: discord.Member = None,
+                    player3: discord.Member = None,
+                    player4: discord.Member = None,
+                    player5: discord.Member = None) -> None:
+
+        player_list = [player1, player2, player3, player4, player5]
+        player_ids = []
+        for player in player_list:
+            if player is not None:
+                player_ids.append(player.id)
+            else:
+                break
+        player_ids = list(dict.fromkeys(player_ids))
+
+        known_list = [ctx.guild.get_member(player_id) for player_id in player_ids]
+        known = len(known_list)
+
+        player_list = list(known_list)
+        while len(player_list) < 5:
+            player_list.append(None)
+
+        embed = discord.Embed(colour=Val.valorantRed)
+        embed.title = f"Valorant Match of {known} premades"
+        embed.description = ""
+        for player in known_list:
+            print(player)
+            embed.description += f"{player.name}\n"
+        await ctx.reply(embed=embed, mention_author=False)
+
 
 async def setup(bot):
     await bot.add_cog(Valorant(bot))
