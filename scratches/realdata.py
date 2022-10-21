@@ -27,7 +27,7 @@ teams = [team for team in itertools.permutations(players, 5)]
 print(len(teams))
 print(teams)
 
-agentTeams = [team for team in itertools.permutations(agents, 5)]
+agentTeams = [team for team in itertools.permutations(analysis, 5)]
 print(len(agentTeams))
 
 combos = itertools.product(teams, agentTeams)
