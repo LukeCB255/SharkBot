@@ -49,5 +49,11 @@ def get() -> Analysis:
     return _analysis
 
 
+def reimport() -> Analysis:
+    global _analysis
+    _analysis = None
+    return get()
+
+
 if not os.path.exists("/".join(analysisPath.split("/")[:-1])):
     os.makedirs("/".join(analysisPath.split("/")[:-1]))
