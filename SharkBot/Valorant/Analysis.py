@@ -16,6 +16,12 @@ class Analysis:
         }
 
     def get_map_data(self, map: Map) -> dict[Agent, list[int]]:
+        """
+        Fetches the values of every agent for a given map
+
+        :param map: The map to return the data for
+        :return: Returns a dictionary of Agent objects and their corresponding values for the given map
+        """
         if map not in self.data.keys():
             raise Errors.MapNotFoundError(map.name)
         return self.data[map]
