@@ -32,6 +32,7 @@ class Valorant(commands.Cog):
         for file in ctx.message.attachments:
             with open(f"data/live/valorant/{file.filename}", "wb+") as outfile:
                 outfile.write(await file.read())
+        Val.Analysis.reimport()
         await ctx.send(f"Saved {len(ctx.message.attachments)} files to `data/live/valorant`")
 
     @val.command()
