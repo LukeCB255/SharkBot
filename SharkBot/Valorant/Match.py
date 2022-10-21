@@ -10,7 +10,3 @@ class Match:
     def calculate(self):
         analysis = Valorant.Analysis.get()
         analysis = analysis.get_map_data(self.map)
-        try:
-            print(analysis)
-        except Exception as e:
-            print(e)
