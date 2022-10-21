@@ -22,11 +22,19 @@ class Analysis:
         :param map: The map to return the data for
         :return: Returns a dictionary of Agent objects and their corresponding values for the given map
         """
+
         if map not in self.data.keys():
             raise Errors.MapNotFoundError(map.name)
         return self.data[map]
 
     def get_agent_data(self, agent: Agent) -> dict[Map, list[int]]:
+        """
+        Fetches the values of the given agent for every map
+
+        :param agent: The agent to return the data for
+        :return: Returns a dictionary of Map objects and the agent's corresponding values
+        """
+
         data = {}
         for map, mapData in self.data.items():
             if agent in mapData.keys():
