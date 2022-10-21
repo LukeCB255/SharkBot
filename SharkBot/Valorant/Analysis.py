@@ -49,10 +49,10 @@ def get() -> Analysis:
     return _analysis
 
 
-def reimport() -> Analysis:
+def reimport() -> None:
     global _analysis
     _analysis = None
-    return get()
+    get()
 
 
 if not os.path.exists("/".join(analysisPath.split("/")[:-1])):
