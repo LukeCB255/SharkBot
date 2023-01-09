@@ -1,9 +1,12 @@
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, time
 
 import discord
 from discord.ext import tasks, commands
 
 import random
+
+from humanize import number
+
 from SharkBot import Member, Item, IDs
 
 
@@ -79,7 +82,7 @@ class Fun(commands.Cog):
                 value=f"You lost **${amount}**!"
             )
         await ctx.reply(embed=embed)
-        await member.missions.log_action("coinflip", ctx)
+        await member.missions.log_action("coinflip", ctx, amount)
         member.write_data()
 
     @commands.hybrid_group()
@@ -96,7 +99,7 @@ class Fun(commands.Cog):
         elif date == member.birthday:
             embed.description = "Your birthday is today! Happy Birthday!!!"
         else:
-            embed.description = f"Your birthday is set to `{datetime.strftime(member.birthday, Member.birthdayFormat)}`"
+            embed.description = f"Your birthday is set to `{datetime.strftime(member.birthday, Member.BIRTHDAY_FORMAT)}`"
 
         await ctx.send(embed=embed)
 
@@ -115,17 +118,23 @@ class Fun(commands.Cog):
 
         try:
             member.birthday = datetime(year, month, day).date()
-            embed.description = f"Set your Birthday to `{datetime.strftime(member.birthday, Member.birthdayFormat)}`."
+            embed.description = f"Set your Birthday to `{datetime.strftime(member.birthday, Member.BIRTHDAY_FORMAT)}`."
             await ctx.send(embed=embed)
             member.write_data()
         except ValueError:
             embed.description = "Please enter a valid date."
             await ctx.send(embed=embed)
 
-    @tasks.loop(hours=24)
+    @tasks.loop(time=time(hour=12))
     async def check_birthdays(self):
         today = datetime.today()
-        present = Item.get("LOOTM")
+        presents = [
+            Item.get("LOOTSHARK"),
+            Item.get("LOOTSHARK"),
+            Item.get("LOOTSHARK"),
+            Item.get("LOOTM"),
+            Item.get("E10")
+        ]
         channel = await self.bot.fetch_channel(IDs.channels["SharkBot Commands"])
 
         for member in Member.members.values():
@@ -134,16 +143,18 @@ class Fun(commands.Cog):
             if member.birthday.day == today.day and member.birthday.month == today.month:
                 if member.lastClaimedBirthday < today.year:
                     member.lastClaimedBirthday = today.year
-                    member.inventory.add(present)
+                    responses = member.inventory.add_items(presents)
                     member.write_data()
+                    age = number.ordinal(today.year - member.birthday.year)
                     user = await channel.guild.fetch_member(member.id)
 
                     embed = discord.Embed()
                     embed.title = "Birthday Time!"
-                    embed.description = f"It's {user.mention}'s Birthday! I got them a {present.text}!"
+                    embed.description = f"It's **{user.display_name}**'s {age} Birthday! I got them:\n"
+                    embed.description += "\n".join(str(response) for response in responses)
                     embed.set_author(name=user.display_name, icon_url=user.display_avatar.url)
 
-                    await channel.send(embed=embed)
+                    await channel.send(f"{user.mention}", embed=embed)
 
     @commands.hybrid_command()
     async def remind_me(self, ctx: commands.Context, minutes: int, message: str):

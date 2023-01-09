@@ -28,26 +28,18 @@ class OpenButton(discord.ui.Button):
             await interaction.response.edit_message(embed=self.embed, view=self.view)
             return
 
-        allOpenedItems = []
+        all_opened_items = []
         for box, count in {box: self.boxes.count(box) for box in set(self.boxes)}.items():
-            openedItems = [boxToOpen.roll() for boxToOpen in [box] * count]
-            allOpenedItems += openedItems
-
-            for item in openedItems:
-                self.member.inventory.remove(box)
-                self.member.inventory.add(item)
-                self.member.stats.openedBoxes += 1
+            responses = self.member.inventory.open_boxes([box] * count)
+            all_opened_items += [response.item for response in responses]
 
             self.embed.add_field(
-                name=f"Opened {count}x {box.rarity.icon} {box.name}",
-                value="\n".join(
-                    [f"{item.rarity.icon} {item.name}{':sparkles:' if not self.member.inventory.contains(item) else ''}"
-                        for item in openedItems]
-                ),
+                name=f"Opened {count}x {str(box)}",
+                value="\n".join(response.item_printout for response in responses),
                 inline=False
             )
 
-        self.view.add_item(SellButton(self.member, self.embed, allOpenedItems))
+        self.view.add_item(SellButton(self.member, self.embed, all_opened_items))
         if len(self.embed.fields[-1].value) < 1000:
             await interaction.response.edit_message(embed=self.embed, view=self.view)
         else:

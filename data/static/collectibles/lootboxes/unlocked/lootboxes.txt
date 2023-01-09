@@ -1,0 +1,18 @@
+LOOTC|Common Lootbox|Contains Common, Uncommon and Rare loot|common
+LOOTU|Uncommon Lootbox|Contains Uncommon, Rare and Legendary loot|uncommon
+LOOTR|Rare Lootbox|Contains Rare, Legendary and Exotic loot|rare
+LOOTL|Legendary Lootbox|Contains Legendary and Exotic loot|legendary
+LOOTE|Exotic Lootbox|Contains Exotic loot|exotic
+LOOTM|Mythic Lootbox|Contains Mythic loot|mythic
+
+LOOTSHARK|Shark Lootbox|Contains any rarity of loot|lootboxes
+
+LOOTVAULT|Vault Lootbox|Contains loot from past events|lootboxes
+LOOTLOVE|Valentines Lootbox|Contains Valentine's Day loot|valentines
+LOOTWQ|Witch Queen Lootbox|Contains Witch Queen loot|witch queen
+LOOTEA|Easter Lootbox|Contains Easter Event loot|easter
+LOOTS|Summer Lootbox|Contains Summer Event loot|summer
+LOOTSR|Slime Rancher Lootbox|Contains Slime Rancher 2 Event loot|slime rancher
+LOOTH|Halloween Lootbox|Contains Halloween Event Loot|halloween
+LOOTCH|Christmas Lootbox|Contains Christmas Event Loot|christmas
+LOOTNY|New Year Lootbox|Contains New Year Event Loot|new year

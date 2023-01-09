@@ -9,9 +9,11 @@ roles = {
 }
 
 channels = {
-    "Count": 925828116021121034,
+    "Count": 1050186817271504916,
     "SharkBot Commands": 937699408059990026,
-    "Destiny Reset": 1024344365876924436
+    "Destiny Reset": 1024344365876924436,
+    "Database Log": 1054890446863749250,
+    "Backups": 1057385686669471865
 }
 
 users = {
@@ -27,3 +29,5 @@ blacklist = [users["MEE6"], users["SharkBot"]]
 mods = [users["Chaos"], users["Luke"], users["HxRL"]]
 
 dev = users["Chaos"]
+
+icon_source_guild = servers["Dev Server"]

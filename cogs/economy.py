@@ -1,3 +1,5 @@
+from typing import Union, Literal
+
 import discord
 from discord.ext import commands
 
@@ -30,12 +32,12 @@ class Economy(commands.Cog):
     @commands.has_role(IDs.roles["Mod"])
     async def get_balance(self, ctx, target: discord.Member):
         member = Member.get(target.id)
-        bal = member.balance
 
         embed = discord.Embed()
-        embed.title = "Balance Check"
-        embed.description = f"**{target.display_name}**'s balance is: *${bal}*"
-        embed.set_thumbnail(url=ctx.author.display_avatar.url)
+        embed.title = f"{target.display_name}'s Balance"
+        embed.set_thumbnail(url=target.display_avatar.url)
+        embed.description = f"Wallet Balance: **${member.balance}**"
+        embed.description += f"\nBank Balance: **${member.bank_balance}**"
         embed.colour = 0x00836d
         await ctx.send(embed=embed)
 
@@ -46,7 +48,7 @@ class Economy(commands.Cog):
     @commands.command(aliases=["transfer"])
     async def pay(self, ctx, target: discord.Member, amount: int):
         member = Member.get(ctx.author.id)
-        targetMember = Member.get(target.id)
+        target_member = Member.get(target.id)
 
         if amount < 0:
             await ctx.send("Nice try buddy. Please enter a positive amount!")
@@ -56,11 +58,90 @@ class Economy(commands.Cog):
             return
 
         member.balance -= amount
-        targetMember.balance += amount
+        target_member.balance += amount
         await ctx.reply(f"Sent **${amount}** to {target.mention}.", mention_author=False)
 
         member.write_data()
-        targetMember.write_data()
+        target_member.write_data()
+
+    @commands.group(invoke_without_command=True)
+    async def bank(self, ctx: commands.Context):
+        member = Member.get(ctx.author.id)
+
+        embed = discord.Embed()
+        embed.title = f"{ctx.author.display_name}'s Bank Balance"
+        embed.set_thumbnail(url=ctx.author.display_avatar.url)
+        embed.description = f"You have **${member.bank_balance}** in your bank."
+
+        await ctx.reply(embed=embed, mention_author=False)
+
+    @bank.command()
+    async def deposit(self, ctx: commands.Context, amount: Union[int, float, str] = "*"):
+        member = Member.get(ctx.author.id)
+        if type(amount) == float:
+            amount = int(amount)
+        if type(amount) == str:
+            if amount.lower() in ["all", "*"]:
+                amount = member.balance
+            else:
+                await ctx.reply(f"Sorry, '{amount}' isn't a valid amount!")
+                return
+        if amount <= 0:
+            await ctx.reply(f"The amount to deposit must be above **$0**!")
+            return
+
+        if amount > member.balance:
+            await ctx.reply(f"You don't have **${amount}** to deposit! Your balance is only **${member.balance}**.")
+            return
+
+        member.balance -= amount
+        member.bank_balance += amount
+
+        embed = discord.Embed()
+        embed.title = f"{ctx.author.display_name}'s Bank Deposit"
+        embed.set_thumbnail(url=ctx.author.display_avatar.url)
+        embed.description = f"You deposited **${amount}** into your bank!"
+        embed.description += f"\nNew Wallet Balance: **${member.balance}**"
+        embed.description += f"\nNew Bank Balance: **${member.bank_balance}**"
+
+        await ctx.reply(embed=embed, mention_author=False)
+
+        member.write_data()
+
+    @bank.command()
+    async def withdraw(self, ctx: commands.Context, amount: Union[int, float, str] = "*"):
+        member = Member.get(ctx.author.id)
+        if type(amount) == float:
+            amount = int(amount)
+        if type(amount) == str:
+            if amount.lower() in ["all", "*"]:
+                amount = member.bank_balance
+            else:
+                await ctx.reply(f"Sorry, '{amount}' isn't a valid amount!")
+                return
+        if amount <= 0:
+            await ctx.reply(f"The amount to withdraw must be above **$0**!")
+            return
+
+        if amount > member.bank_balance:
+            await ctx.reply(
+                f"You don't have **${amount}** to withdraw! Your bank balance is only **${member.bank_balance}**."
+            )
+            return
+
+        member.bank_balance -= amount
+        member.balance += amount
+
+        embed = discord.Embed()
+        embed.title = f"{ctx.author.display_name}'s Bank Withdrawal"
+        embed.set_thumbnail(url=ctx.author.display_avatar.url)
+        embed.description = f"You withdrew **${amount}** from your bank!"
+        embed.description += f"\nNew Wallet Balance: **${member.balance}**"
+        embed.description += f"\nNew Bank Balance: **${member.bank_balance}**"
+
+        await ctx.reply(embed=embed, mention_author=False)
+
+        member.write_data()
 
 
 async def setup(bot):

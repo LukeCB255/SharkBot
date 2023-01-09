@@ -1,5 +1,7 @@
 from datetime import datetime, timedelta
 
+from SharkBot import Utils
+
 timeFormat = "%d/%m/%Y-%H:%M:%S"
 
 
@@ -30,37 +32,4 @@ class Cooldown:
 
     @property
     def time_remaining_string(self) -> str:
-        seconds = int(self.time_remaining.total_seconds())
-        days, seconds = seconds // (24 * 60 * 60), seconds % (24 * 60 * 60)
-        hours, seconds = seconds // (60 * 60), seconds % (60 * 60)
-        minutes, seconds = seconds // 60, seconds % 60
-
-        outputString = ""
-        if days != 0:
-            if days == 1:
-                outputString += f"{days} day, "
-            else:
-                outputString += f"{days} days, "
-        if hours != 0:
-            if hours == 1:
-                outputString += f"{hours} hour, "
-            else:
-                outputString += f"{hours} hours, "
-        if minutes != 0:
-            if minutes == 1:
-                outputString += f"{minutes} minute, "
-            else:
-                outputString += f"{minutes} minutes, "
-        if outputString == "":
-            if seconds == 1:
-                outputString += f"{seconds} second "
-            else:
-                outputString += f"{seconds} seconds "
-        else:
-            outputString = outputString[:-2] + f" and {seconds} "
-            if seconds == 1:
-                outputString += f"second "
-            else:
-                outputString += f"seconds "
-
-        return outputString
+        return Utils.td_to_string(self.time_remaining)

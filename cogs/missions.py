@@ -9,7 +9,7 @@ class Missions(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
 
-    @commands.hybrid_command()
+    @commands.hybrid_command(aliases=["m"])
     async def missions(self, ctx: commands.Context):
         member = Member.get(ctx.author.id)
 
@@ -17,16 +17,16 @@ class Missions(commands.Cog):
         embed.title = f"{ctx.author.display_name}'s Missions"
         embed.set_thumbnail(url=ctx.author.display_avatar.url)
 
-        for missionType in Mission.types:
+        for missionType in Mission.Mission.types:
             missions = [mission for mission in member.missions.missions if mission.type == missionType]
-            outputText = ""
+            output_text = ""
             for mission in missions:
-                outputText += f"""\n**{mission.description}**
+                output_text += f"""\n**{mission.description}**
                 Progress: {mission.progress}/{mission.quota} done
                 Rewards: {mission.rewards_text}\n"""
             embed.add_field(
                 name=f"{missionType} Missions",
-                value=outputText
+                value=output_text
             )
 
         await ctx.reply(embed=embed)

@@ -1,46 +1,89 @@
-from SharkBot import Item, Errors
+import random
+
+from SharkBot import Item, Errors, Response
 from typing import Union
 
 
 class MemberInventory:
 
-    def __init__(self, member, itemids: list[str]) -> None:
+    def __init__(self, member, item_ids: list[str]) -> None:
         self.member = member
-        self._items = [Item.get(itemid) for itemid in itemids]
+        self._items = [Item.get(itemid) for itemid in item_ids]
+
+    def __len__(self) -> int:
+        return len(self._items)
 
     @property
     def items(self) -> list[Item.Item]:
         return list(self._items)
 
     @property
-    def itemids(self) -> list[str]:
-        return [item.id for item in self._items]
+    def item_ids(self) -> list[str]:
+        return list([item.id for item in self._items])
 
     @property
     def lootboxes(self) -> list[Item.Lootbox]:
-        return [item for item in self._items if type(item) is Item.Lootbox]
+        return list([item for item in self._items if item.type == "Lootbox"])
 
     @property
-    def lootboxids(self) -> list[str]:
-        return [item.id for item in self._items if type(item) is Item.Lootbox]
+    def lootbox_ids(self) -> list[str]:
+        return list([item.id for item in self._items if item.type == "Lootbox"])
+
+    @property
+    def unlocked_lootboxes(self) -> list[Item.Lootbox]:
+        return list([item for item in self._items if item.type == "Lootbox" and item.unlocked])
+
+    @property
+    def unlocked_lootbox_ids(self) -> list[str]:
+        return list([item.id for item in self._items if item.type == "Lootbox" and item.unlocked])
+
+    @property
+    def locked_lootboxes(self) -> list[Item.Lootbox]:
+        return list([item for item in self._items if item.type == "Lootbox" and not item.unlocked])
+
+    @property
+    def locked_lootbox_ids(self) -> list[str]:
+        return list([item.id for item in self._items if item.type == "Lootbox" and not item.unlocked])
+
+    @property
+    def sellable_items(self) -> list[Item.Item]:
+        return list([item for item in self._items if item.sellable])
 
     def count(self, item: Item.Item) -> int:
         return self._items.count(item)
+
+    def __contains__(self, item: Union[Item.Item, str]) -> bool:
+        if type(item) is str:
+            item = Item.get(item)
+        return item in self._items
 
     def contains(self, item: Union[Item.Item, str]) -> bool:
         if type(item) is str:
             item = Item.get(item)
         return item in self._items
 
-    def add(self, item: Item.Item) -> None:
-        if not self.member.collection.contains(item):
+    def add(self, item: Item.Item, ignore_vault: bool = False) -> Response.InventoryAddResponse:
+        response = Response.InventoryAddResponse(item=item)
+        if item not in self.member.collection:
             self.member.collection.add(item)
-        self._items.append(item)
+            response.new_item = True
+        if not ignore_vault and item in self.member.vault.auto:
+            self.member.vault.add(item)
+            response.auto_vault = True
+        else:
+            self._items.append(item)
+        return response
+
+    def add_items(self, items: list[Item.Item], ignore_vault: bool = False) -> list[Response.InventoryAddResponse]:
+        return [self.add(item, ignore_vault) for item in items]
 
     def remove(self, item: Item.Item) -> None:
         if item not in self._items:
             raise Errors.ItemNotInInventoryError(self.member.id, item.id)
         self._items.remove(item)
+
+    def remove_all(self) -> None:
+        self._items = []
 
     def sort(self) -> None:
         self._items.sort(key=Item.get_order_index)
@@ -57,3 +100,22 @@ class MemberInventory:
                 dupes += [item] * (count - 1)
 
         return dupes
+
+    def open_box(self, box: Item.Lootbox, guarantee_new_item: bool = False) -> Response.BoxOpenResponse:
+        guarantee_new_item = guarantee_new_item or box.id in Item.guaranteed_new_boxes
+        item = box.roll()
+
+        if guarantee_new_item:
+            if item in self.member.collection:
+                possible_items = list(set(item.collection.items) - set(self.member.collection.items))
+                if len(possible_items) > 0:
+                    item = random.choice(possible_items)
+
+        self.remove(box)
+        inv_response = self.add(item)
+        response = Response.BoxOpenResponse(box=box, inv_response=inv_response)
+
+        return response
+
+    def open_boxes(self, to_open: list[tuple[Item.Lootbox, bool]]) -> list[Response.BoxOpenResponse]:
+        return [self.open_box(*box) for box in to_open]

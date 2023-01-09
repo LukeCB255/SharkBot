@@ -1,21 +1,43 @@
-from typing import Union
+from datetime import datetime
+from typing import Union, Optional, Self
 
 import discord
 
-import SharkBot.Utils
-from SharkBot import Collection, Rarity, Errors, LootPool, Utils
+import SharkBot.Collection
+from SharkBot import Collection, Rarity, Errors, Lootpool, Utils
 
 
 class Item:
 
-    def __init__(self, itemDataString: str) -> None:
-        itemData = itemDataString.split("|")
-        self.id = itemData[0]
-        self.name = itemData[1]
-        self.description = itemData[2]
-        self.collection = Collection.get(itemData[3])
-        self.rarity = Rarity.get(itemData[3])
+    def __init__(self, item_id: str, name: str, description: str, collection: Collection.Collection,
+                 rarity: Rarity.Rarity):
+        self.id = item_id
+        self.name = name
+        self.description = description
+        self.collection = collection
+        self.rarity = rarity
+        self.sellable = True
+        self.type = "Item"
+        self.xp_value = self.collection.xp_value
+        self.item_index = self.collection.item_index_offset + len(self.collection)
 
+    def __repr__(self) -> str:
+        return f"Item[id={self.id}, name={self.name}, collection={self.collection.name}, rarity={self.rarity.name}]"
+
+    def __str__(self) -> str:
+        return f"{self.rarity.icon} {self.name}"
+
+    def __eq__(self, other: Self):
+        return self.id == other.id
+
+    def __hash__(self):
+        return self.item_index
+
+    def __lt__(self, other: Self):
+        return self.item_index < other.item_index
+
+    def register(self) -> None:
+        items_dict[self.id] = self
         self.collection.add_item(self)
 
     @property
@@ -23,8 +45,18 @@ class Item:
         embed = discord.Embed()
         embed.title = self.name
         embed.colour = self.collection.colour
-        embed.description = self.description
         embed.set_footer(text=f"{self.rarity.name} | {self.id}")
+
+        embed.add_field(
+            name="Description",
+            value=self.description,
+            inline=False
+        )
+        embed.add_field(
+            name="Sell Value",
+            value=self.value,
+            inline=False
+        )
 
         return embed
 
@@ -33,35 +65,57 @@ class Item:
         return self.rarity.value
 
     @property
-    def text(self) -> str:
-        return f"{self.rarity.icon} {self.name}"
+    def found_in(self):
+        return [lootbox for lootbox in SharkBot.Collection.lootboxes.items if self in lootbox.lootPool.possible_items()]
 
 
 class Lootbox(Item):
 
-    def __init__(self, itemDataString: str) -> None:
-        itemData = itemDataString.split("|")
-        self.id = itemData[0]
-        self.name = itemData[1]
-        self.description = itemData[2]
-        self.collection = Collection.lootboxes
-        self.rarity = Rarity.get(itemData[3])
-        self.lootPool = LootPool.LootPool(itemData[4])
+    def __init__(self, item_id: str, name: str, description: str, collection: Collection, rarity: Rarity) -> None:
 
-        self.collection.add_item(self)
+        super().__init__(item_id, name, description, collection, rarity)
+        self.lootPool = Lootpool.get(self.id)
+        self.sellable = False
+        self.type = "Lootbox"
+
+    def _check_unlocked(self) -> bool:
+        return True
+
+    @property
+    def locked(self) -> bool:
+        return not self._check_unlocked()
+
+    @property
+    def unlocked(self) -> bool:
+        return self._check_unlocked()
 
     def roll(self) -> Item:
         return self.lootPool.roll()
 
 
+class TimeLockedLootbox(Lootbox):
+
+    def __init__(self, item_id: str, name: str, description: str, collection: Collection, rarity: Rarity,
+                 unlock_dt: str):
+        super().__init__(item_id, name, description, collection, rarity)
+        self.unlock_dt = datetime.strptime(unlock_dt, "%d/%m/%Y-%H:%M:%S")
+
+    def _check_unlocked(self) -> bool:
+        return datetime.now() > self.unlock_dt
+
+
 class FakeItem(Item):
 
     def __init__(self, item: Item) -> None:
-        self.id = item.id
-        self.name = "???"
-        self.description = "???"
-        self.collection = item.collection
-        self.rarity = item.rarity
+        super().__init__(
+            item_id=item.id,
+            name="???",
+            description="???",
+            collection=item.collection,
+            rarity=item.rarity
+        )
+        if self.id == "F1":
+            self.description = "sbf1.chaoscantrip.com"
 
 
 converters = {}
@@ -73,60 +127,127 @@ def load_converters() -> None:
         converters = {line[0]: line[1] for line in [line.split(":") for line in infile.read().split("\n")]}
 
 
-def get(searchString: str) -> Union[Item, Lootbox]:
-    searchString = searchString.upper()
-    for collection in Collection.collections:
-        for item in collection.items:
-            if searchString == item.id:
-                return item
-    if searchString in converters:
-        return get(converters[searchString])
-    raise Errors.ItemNotFoundError(searchString)
+def get(item_id: str) -> Union[Item, Lootbox, TimeLockedLootbox]:
+    """
+    Fetches the Item with the given Item ID
+
+    :param item_id: The Item ID to search with
+    :return: The Item with the given ID
+    """
+
+    item_id = item_id.upper()
+    item = items_dict.get(item_id)
+    if item is not None:
+        return item
+    else:
+        if item_id in converters:
+            return get(converters[item_id])
+        else:
+            raise Errors.ItemNotFoundError(item_id)
 
 
-def search(searchString: str) -> Union[Item, Lootbox]:
-    searchString = searchString.upper()
+def search(search_string: str) -> Union[Item, Lootbox, TimeLockedLootbox]:
+    """
+    Fetches the Item with the given Item ID or Name
+
+    :param search_string: The string to search with
+    :return: The Item with the given ID or Name
+    """
+
+    search_string = search_string.upper()
     for collection in Collection.collections:
         for item in collection.items:
-            if searchString == item.id or searchString == item.name.upper():
+            if search_string == item.id or search_string == item.name.upper():
                 return item
     for item in Collection.lootboxes.items:
-        if searchString + " LOOTBOX" == item.name.upper():
+        if search_string + " LOOTBOX" == item.name.upper():
             return item
-    if searchString in converters:
-        return get(converters[searchString])
-    raise Errors.ItemNotFoundError(searchString)
+    if search_string in converters:
+        return get(converters[search_string])
+    raise Errors.ItemNotFoundError(search_string)
 
 
 def get_order_index(item: Union[str, Item]) -> int:
     if type(item) == str:
         item = get(item)
 
-    return items.index(item)
+    return item.item_index
 
 
-def import_item_file(filename: str, itemType: type) -> None:
+def import_item_file(filename: str) -> None:
     with open(filename, "r") as infile:
-        fileData = infile.read()
+        raw_file_data = infile.read()
 
-    for line in fileData.split("\n"):
-        if line == "":
-            continue
-        items.append(itemType(line))
+    item_data_set = [line.split("|") for line in raw_file_data.split("\n") if line != ""]
+
+    for item_data in item_data_set:
+        item = Item(
+            item_id=item_data[0],
+            name=item_data[1],
+            description=item_data[2],
+            collection=Collection.get(item_data[3]),
+            rarity=Rarity.get(item_data[3])
+        )
+
+        item.register()
 
 
-items = []
+def import_lootbox_file(filename: str) -> None:
+    with open(filename, "r") as infile:
+        raw_file_data = infile.read()
 
-for filepath in SharkBot.Utils.get_dir_filepaths("data/static/collectibles/items"):
-    import_item_file(filepath, Item)
+    item_data_set = [line.split("|") for line in raw_file_data.split("\n") if line != ""]
 
-for filepath in SharkBot.Utils.get_dir_filepaths("data/static/collectibles/lootboxes"):
-    import_item_file(filepath, Lootbox)
+    for item_data in item_data_set:
+        item = Lootbox(
+            item_id=item_data[0],
+            name=item_data[1],
+            description=item_data[2],
+            collection=Collection.lootboxes,
+            rarity=Rarity.get(item_data[3])
+        )
+
+        item.register()
+
+
+def import_time_locked_lootbox_file(filename: str) -> None:
+    with open(filename, "r") as infile:
+        raw_file_data = infile.read()
+
+    item_data_set = [line.split("|") for line in raw_file_data.split("\n") if line != ""]
+
+    for item_data in item_data_set:
+        item = TimeLockedLootbox(
+            item_id=item_data[0],
+            name=item_data[1],
+            description=item_data[2],
+            collection=Collection.lootboxes,
+            rarity=Rarity.get(item_data[3]),
+            unlock_dt=item_data[4]
+        )
+
+        item.register()
+
+items_dict: dict[str, Union[Item, Lootbox, TimeLockedLootbox]] = {}
+
+for filepath in Utils.get_dir_filepaths("data/static/collectibles/items"):
+    import_item_file(filepath)
+
+for filepath in Utils.get_dir_filepaths("data/static/collectibles/lootboxes/unlocked"):
+    import_lootbox_file(filepath)
+
+for filepath in Utils.get_dir_filepaths("data/static/collectibles/lootboxes/locked/time"):
+    import_time_locked_lootbox_file(filepath)
+
+items = list(items_dict.values())
+items.sort()
 
 load_converters()
 
-currentEventBoxID: Union[str, None] = "LOOTH"
-if currentEventBoxID is None:
-    currentEventBox = None
-else:
+guaranteed_new_boxes = ["LOOTM"]
+
+currentEventBoxID: Optional[str] = None
+currentEventBox: Optional[Lootbox] = None
+if currentEventBoxID is not None:
     currentEventBox = get(currentEventBoxID)
+

@@ -1,44 +1,38 @@
 import asyncio
 import os
-from datetime import datetime
-
-import aiohttp
+from datetime import datetime, timedelta
+import sys
 import discord
 from discord.ext import commands
+import colorama
+colorama.init(autoreset=True)
 
 import secret
 import SharkBot
 
-intents = discord.Intents.default()
-intents.members = True
-intents.messages = True
-intents.message_content = True
-intents.voice_states = True
+intents = discord.Intents.all()
 bot = commands.Bot(command_prefix="$", intents=intents)
 
 
 @bot.event
 async def on_ready():
-    print("\nSharkBot connected to Discord")
-    print(f"- Account: {bot.user}")
-    print(f"- User ID: {bot.user.id}")
+    print(colorama.Fore.GREEN + colorama.Style.BRIGHT + f"\nSharkBot connected to Discord" + colorama.Style.RESET_ALL)
+    print(colorama.Fore.MAGENTA + colorama.Style.BRIGHT + f"- Account: {bot.user}")
+    print(colorama.Fore.MAGENTA + colorama.Style.BRIGHT + f"- User ID: {bot.user.id}" + colorama.Style.RESET_ALL)
+
+    await check_icons()
 
     if not os.path.exists("data/live/bot/lastmessage.txt"):
-        lastTime = None
+        last_time = None
     else:
         with open("data/live/bot/lastmessage.txt", "r") as infile:
-            lastTime = datetime.strptime(infile.read(), "%d/%m/%Y-%H:%M:%S:%f")
+            last_time = datetime.strptime(infile.read(), "%d/%m/%Y-%H:%M:%S:%f")
 
     embed = discord.Embed()
     embed.title = "SharkBot is up and running!"
     embed.description = f"<t:{int(datetime.now().timestamp())}:F>"
 
-    with open("data/live/bot/ip.txt", "r") as infile:
-        embed.set_footer(
-            text=infile.read()
-        )
-
-    if lastTime is None:
+    if last_time is None:
         embed.add_field(
             name="Last Interaction",
             value="No recorded last interaction",
@@ -47,12 +41,12 @@ async def on_ready():
     else:
         embed.add_field(
             name="Last Interaction",
-            value=f"<t:{int(lastTime.timestamp())}:F>",
+            value=f"<t:{int(last_time.timestamp())}:F>",
             inline=False
         )
         embed.add_field(
             name="Downtime",
-            value=f"*{(datetime.now() - lastTime).total_seconds()}* seconds since last interaction."
+            value=f"*{(datetime.now() - last_time).total_seconds()}* seconds since last interaction."
         )
 
     embed.set_thumbnail(
@@ -65,15 +59,15 @@ async def on_ready():
     await bot.change_presence(status=discord.Status.online, activity=discord.Game(name="nom nom nom!"))
 
     r = open("data/live/bot/reboot.txt", "r")
-    replyTxt = r.read()
-    replyFlag, replyID = replyTxt.split()
+    reply_text = r.read()
+    reply_flag, reply_id = reply_text.split()
     r.close()
 
-    if replyFlag == "True":
-        replyChannel = await bot.fetch_channel(int(replyID))
-        await replyChannel.send("I'm back!")
+    if reply_flag == "True":
+        reply_channel = await bot.fetch_channel(int(reply_id))
+        await reply_channel.send("I'm back!")
         w = open("data/live/bot/reboot.txt", "w")
-        w.write(f"False {replyID}")
+        w.write(f"False {reply_id}")
         w.close()
 
     print("\nThe bot is currently in these servers:")
@@ -85,6 +79,17 @@ async def on_ready():
         print(f"    - Voice Channels: {len(guild.voice_channels)}")
 
 
+async def check_icons():
+    guild = await bot.fetch_guild(SharkBot.IDs.icon_source_guild)
+    print(colorama.Fore.CYAN + colorama.Style.BRIGHT + "\nChecking Icons... ", end="")
+    if not SharkBot.Icon.check(guild=guild):
+        print(colorama.Fore.YELLOW + colorama.Style.BRIGHT + "New Icons Found.")
+        print(colorama.Fore.YELLOW + colorama.Style.BRIGHT + "Fetching new Icons... ", end="")
+        SharkBot.Icon.extract(guild=guild)
+        print(colorama.Fore.GREEN + colorama.Style.BRIGHT + "Done.\n")
+    else:
+        print(colorama.Fore.GREEN + colorama.Style.BRIGHT + "No New Icons Found.\n")
+
 @bot.command()
 @commands.check_any(commands.is_owner())
 async def reboot(ctx):
@@ -92,11 +97,43 @@ async def reboot(ctx):
     await ctx.send("Alright! Rebooting now!")
     await bot.change_presence(status=discord.Status.idle, activity=discord.Game(name="I'm just rebooting!"))
 
-    f = open("reboot.txt", "w")
-    f.write("True " + str(ctx.channel.id))
-    f.close()
+    with open("data/live/bot/reboot.txt", "w+") as outfile:
+        outfile.write("True " + str(ctx.channel.id))
 
     os.system("sudo reboot")
+
+
+@bot.command()
+@commands.is_owner()
+async def restart(ctx) -> None:
+    await ctx.invoke(bot.get_command("pull"))
+    await ctx.send("Alright! Starting the script again!")
+
+    with open("data/live/bot/reboot.txt", "w+") as outfile:
+        outfile.write("True " + str(ctx.channel.id))
+    with open("instant_restart", "w+") as outfile:
+        pass
+
+    quit()
+
+
+@bot.command()
+@commands.is_owner()
+async def schedule_restart(ctx, secs: int) -> None:
+    target_time = datetime.utcnow() + timedelta(seconds=secs)
+
+    await ctx.send(f"Restart scheduled for {discord.utils.format_dt(target_time)}")
+    await discord.utils.sleep_until(datetime.now() + timedelta(seconds=secs))
+
+    await ctx.invoke(bot.get_command("pull"))
+    await ctx.send(f"{ctx.author.mention} restarting...")
+
+    with open("data/live/bot/reboot.txt", "w+") as outfile:
+        outfile.write("True " + str(ctx.channel.id))
+    with open("instant_restart", "w+") as outfile:
+        pass
+
+    quit()
 
 
 @bot.command()
@@ -143,28 +180,28 @@ async def rebuild(ctx, extension="all"):
 @bot.command()
 @commands.check_any(commands.is_owner())
 async def pull(ctx):
-    messageText = "Pulling latest commits..."
-    message = await ctx.reply(f"```{messageText}```")
-    messageText += "\n\n" + os.popen("git pull").read()
-    await message.edit(content=f"```{messageText}```")
+    message_text = "Pulling latest commits..."
+    message = await ctx.reply(f"```{message_text}```")
+    message_text += "\n\n" + os.popen("git pull").read()
+    await message.edit(content=f"```{message_text}```")
 
 
 @bot.command()
 @commands.is_owner()
 async def reset(ctx):
-    messageText = "git reset --hard"
-    message = await ctx.reply(f"```{messageText}```")
-    messageText += "\n\n" + os.popen("git reset --hard").read()
-    await message.edit(content=f"```{messageText}```")
+    message_text = "git reset --hard"
+    message = await ctx.reply(f"```{message_text}```")
+    message_text += "\n\n" + os.popen("git reset --hard").read()
+    await message.edit(content=f"```{message_text}```")
 
 
 @bot.command()
 @commands.is_owner()
 async def execute(ctx, *, command):
-    messageText = command
-    message = await ctx.reply(f"```{messageText}```")
-    messageText += "\n\n" + os.popen(command).read()
-    await message.edit(content=f"```{messageText}```")
+    message_text = command
+    message = await ctx.reply(f"```{message_text}```")
+    message_text += "\n\n" + os.popen(command).read()
+    await message.edit(content=f"```{message_text}```")
 
 
 @bot.command()
@@ -176,10 +213,10 @@ async def sync(ctx):
     embed = discord.Embed()
     embed.title = "Command Sync"
     embed.description = f"{len(synced)} commands synced."
-    commandList = ""
+    command_list = ""
     for command in synced:
-        commandList += f"**{command.name}** *[{','.join([argument.name for argument in command.options])}]*\n"
-    embed.add_field(name="Slash Commands", value=commandList)
+        command_list += f"**{command.name}** *[{','.join([argument.name for argument in command.options])}]*\n"
+    embed.add_field(name="Slash Commands", value=command_list)
     await message.edit(embed=embed)
 
 
@@ -194,40 +231,30 @@ async def checkout(ctx, branch):
 
 async def main():
 
-    if not os.path.exists("data/live/bot/"):
-        os.makedirs("data/live/bot")
+    raw_version = sys.version.split(" ")[0]
+    version = [int(number) for number in raw_version.split(".")]
+    if version[0] < 3 or version[1] < 11:
+        print(colorama.Fore.RED + colorama.Style.BRIGHT + "Python 3.11 or newer must be used to run SharkBot. You are currently running {raw_version}")
+        input("Press any key to exit...")
+        quit()
 
-    if not os.path.isfile("data/live/bot/reboot.txt"):
-        with open("data/live/bot/reboot.txt", "w+") as rebootFile:
-            rebootFile.write("False 0")
+    SharkBot.Utils.FileChecker.file("data/live/bot/reboot.txt", "False 0")
 
-    async with aiohttp.ClientSession() as session:
-        async with session.get('https://api.ipify.org') as r:
-            if r.status == 200:
-                ip = await r.text()
-                with open("data/live/bot/ip.txt", "w+") as outfile:
-                    outfile.write(ip)
-            else:
-                if not os.path.exists("data/live/bot/ip.txt"):
-                    with open("data/live/bot/ip.txt", "w+") as outfile:
-                        outfile.write("0")
-
-
-    print("\nBeginning SharkBot main()")
+    print(colorama.Fore.CYAN + colorama.Style.BRIGHT + "\nBeginning SharkBot main()")
 
     print("\nLoaded Data:")
     print(f"- Loaded {len(SharkBot.Collection.collections)} Collections")
-    print("\n".join([f"    - {c.name}: {c.length} items" for c in SharkBot.Collection.collections]))
+    print("\n".join([f"    - {c.name}: {len(c)} items" for c in SharkBot.Collection.collections]))
 
     print(f"- Loaded data for {len(SharkBot.Member.members.values())} Members")
 
-    print(f"\nLoading Cogs...\n")
+    print(colorama.Fore.CYAN + colorama.Style.BRIGHT + "\nLoading Cogs...\n")
     for filename in os.listdir("./cogs"):
         if filename.endswith(".py"):
             await bot.load_extension(f"cogs.{filename[:-3]}")
-    print(f"\nFinished loading Cogs.")
+    print(colorama.Fore.GREEN + colorama.Style.BRIGHT + f"\nFinished loading Cogs.")
 
-    print("\nStarting Bot...")
+    print(colorama.Fore.CYAN + colorama.Style.BRIGHT + "\nStarting Bot...")
     async with bot:
         await bot.start(secret.token)
 

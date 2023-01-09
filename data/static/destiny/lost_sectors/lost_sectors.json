@@ -122,6 +122,30 @@
     }
   },
   {
+    "name": "K1 Revelation",
+    "destination": "Moon, Sorrow's Harbor",
+    "burn": "Void",
+    "embed_url": "https://kyber3000.com/LS-K1Revelation",
+    "legend": {
+      "champions": {
+        "Barrier": 4,
+        "Unstoppable": 3
+      },
+      "shields": {
+        "Arc": 4
+      }
+    },
+    "master": {
+      "champions": {
+        "Barrier": 7,
+        "Unstoppable": 3
+      },
+      "shields": {
+        "Arc": 1
+      }
+    }
+  },
+  {
     "name": "K1 Logistics",
     "destination": "Moon, Archer's Line",
     "burn": "Void",
@@ -268,6 +292,108 @@
       "shields": {
         "Arc": 22,
         "Void": 2
+      }
+    }
+  },
+  {
+    "name": "Sepulcher",
+    "destination": "Throne World, Florescent Canal",
+    "burn": "Solar",
+    "embed_url": "https://kyber3000.com/LS-Sepulcher",
+    "legend": {
+      "champions": {
+        "Barrier": 3,
+        "Unstoppable": 1
+      },
+      "shields": {
+        "Arc": 2,
+        "Solar": 1
+      }
+    },
+    "master": {
+      "champions": {
+        "Barrier": 5,
+        "Unstoppable": 2
+      },
+      "shields": {
+        "Arc": 1
+      }
+    }
+  },
+  {
+    "name": "Extraction",
+    "destination": "Throne World, Quagmire",
+    "burn": "Arc",
+    "embed_url": "https://kyber3000.com/LS-Extraction",
+    "legend": {
+      "champions": {
+        "Overload": 1,
+        "Unstoppable": 2
+      },
+      "shields": {
+        "Arc": 7,
+        "Void": 5
+      }
+    },
+    "master": {
+      "champions": {
+        "Overload": 4,
+        "Unstoppable": 2
+      },
+      "shields": {
+        "Arc": 4,
+        "Void": 5
+      }
+    }
+  },
+  {
+    "name": "Chamber of Starlight",
+    "destination": "Dreaming City, Rheasilvia",
+    "burn": "Solar",
+    "embed_url": "https://kyber3000.com/LS-ChamberOfStarlight",
+    "legend": {
+      "champions": {
+        "Overload": 1,
+        "Unstoppable": 3
+      },
+      "shields": {
+        "Solar": 2,
+        "Void": 17
+      }
+    },
+    "master": {
+      "champions": {
+        "Overload": 3,
+        "Unstoppable": 5
+      },
+      "shields": {
+        "Arc": 1,
+        "Solar": 2,
+        "Void": 29
+      }
+    }
+  },
+  {
+    "name": "Aphelion's Rest",
+    "destination": "Dreaming City, The Strand",
+    "burn": "Stasis",
+    "embed_url": "https://kyber3000.com/LS-AphelionsRest",
+    "legend": {
+      "champions": {
+        "Overload": 2,
+        "Unstoppable": 2
+      },
+      "shields": {
+        "Void": 9
+      }
+    },
+    "master": {
+      "champions": {
+        "Overload": 4,
+        "Unstoppable": 3
+      },
+      "shields": {
+        "Void": 10
       }
     }
   }

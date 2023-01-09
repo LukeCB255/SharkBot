@@ -1,5 +1,5 @@
 import discord
-from datetime import datetime
+from datetime import datetime, date, time, timedelta
 from discord.ext import commands, tasks
 
 import SharkBot
@@ -14,81 +14,61 @@ class Destiny(commands.Cog):
     def cog_unload(self) -> None:
         self.reset.cancel()
 
-    @tasks.loop(time=SharkBot.Destiny.resetTime)
+    @tasks.loop(time=SharkBot.Destiny.reset_time)
     async def reset(self) -> None:
         channel = await self.bot.fetch_channel(SharkBot.IDs.channels["Destiny Reset"])
-        weeklyReset = datetime.today().weekday() == 1
-
-        if weeklyReset:
-            embed = discord.Embed()
-            embed.title = "Weekly Reset!"
-            embed.description = f"<t:{int(datetime.utcnow().timestamp())}:D>"
-            embed.colour = discord.Colour.dark_green()
-
-            raid = SharkBot.Destiny.Raid.get_current()
-            dungeon = SharkBot.Destiny.Dungeon.get_current()
-            nightfall = SharkBot.Destiny.Nightfall.get_current()
-
-            embed.add_field(
-                name="Featured Raid",
-                value=raid.name,
-                inline=False
-            )
-            embed.add_field(
-                name="Featured Dungeon",
-                value=dungeon.name,
-                inline=False
-            )
-            embed.add_field(
-                name="This Week's Nightfall",
-                value=f"{nightfall.name}\n{nightfall.gm_icons}",
-                inline=False
-            )
-
+        embeds = SharkBot.Destiny.Reset.get_embeds()
+        for embed in embeds:
             await channel.send(embed=embed)
-
-        embed = discord.Embed()
-        embed.title = "Daily Reset!"
-        embed.description = f"<t:{int(datetime.utcnow().timestamp())}:D>"
-        embed.colour = discord.Colour.dark_gold()
-
-        sector = SharkBot.Destiny.LostSector.get_current()
-        sectorText = f"{sector.name} - {sector.destination}"
-        sectorText += f"\n{sector.champion_list}, {sector.shield_list}"
-        sectorText += f"\n{sector.burn.text} Burn, {SharkBot.Destiny.LostSectorReward.get_current().text}"
-
-        embed.add_field(
-            name="Today's Lost Sector",
-            value=sectorText,
-            inline=False
-        )
-
-        await channel.send(embed=embed)
 
     @commands.hybrid_group()
     async def destiny(self, ctx: commands.Context) -> None:
         await ctx.send("Destiny Command")
 
+    @destiny.command()
+    @commands.has_role(SharkBot.IDs.roles["Mod"])
+    async def send_embeds(self, ctx: commands.Context, channel: discord.TextChannel, include_weekly: bool = False):
+        await ctx.send("Sending Destiny Reset Embeds")
+        if channel.id == SharkBot.IDs.channels["Destiny Reset"]:
+            await ctx.send("Deleting old embeds")
+            async for message in channel.history(limit=10, after=(datetime.today() - timedelta(days=1))):
+                if message.author.id != SharkBot.IDs.users["SharkBot"]:
+                    continue
+                await message.delete()
+        embeds = SharkBot.Destiny.Reset.get_embeds(include_weekly)
+        for embed in embeds:
+            await channel.send(embed=embed)
+
     @destiny.command(
         description="Shows info about today's active Lost Sector"
     )
     async def sector(self, ctx: commands.Context) -> None:
-        currentSector = SharkBot.Destiny.LostSector.get_current()
+        current_sector = SharkBot.Destiny.LostSector.get_current()
         reward = SharkBot.Destiny.LostSectorReward.get_current()
 
+        if current_sector is None:
+            embed = discord.Embed()
+            embed.title = "Today's Lost Sector"
+            embed.description = "Lost Sector Unknown (Season just started)"
+            embed.set_thumbnail(
+                url="https://www.bungie.net/common/destiny2_content/icons/6a2761d2475623125d896d1a424a91f9.png"
+            )
+            await ctx.reply(embed=embed)
+            return
+
         embed = discord.Embed()
-        embed.title = f"{currentSector.name}\n{currentSector.destination}"
-        embed.description = f"{currentSector.burn.text} Burn {reward.text}"
+        embed.title = f"{current_sector.name}\n{current_sector.destination}"
+        embed.description = f"{current_sector.burn} Burn {reward}"
         embed.set_thumbnail(
             url="https://www.bungie.net/common/destiny2_content/icons/6a2761d2475623125d896d1a424a91f9.png"
         )
         embed.add_field(
-            name="Legend <:light_icon:1021555304183386203> 1570",
-            value=f"{currentSector.legend.details}"
+            name="Legend <:light_icon:1021555304183386203> 1580",
+            value=f"{current_sector.legend.details}"
         )
         embed.add_field(
-            name="Master <:light_icon:1021555304183386203> 1600",
-            value=f"{currentSector.master.details}"
+            name="Master <:light_icon:1021555304183386203> 1610",
+            value=f"{current_sector.master.details}"
         )
 
         await ctx.send(embed=embed)
@@ -102,20 +82,30 @@ class Destiny(commands.Cog):
         ]
     )
     async def nightfall(self, ctx: commands.Context, nightfall: str = SharkBot.Destiny.Nightfall.get_current().name):
-        currentNightfall = SharkBot.Destiny.Nightfall.get(nightfall)
+        current_nightfall = SharkBot.Destiny.Nightfall.get(nightfall)
+
+        if current_nightfall is None:
+            embed = discord.Embed()
+            embed.title = "This Week's Nightfall"
+            embed.description = "Nightfall Rotation Unknown (Season just started)"
+            embed.set_thumbnail(
+                url="https://www.bungie.net/common/destiny2_content/icons/a72e5ce5c66e21f34a420271a30d7ec3.png"
+            )
+            await ctx.reply(embed=embed, mention_author=False)
+            return
 
         embed = discord.Embed()
-        embed.title = f"{currentNightfall.name}\n{currentNightfall.destination}"
+        embed.title = f"{current_nightfall.name}\n{current_nightfall.destination}"
         embed.set_thumbnail(
             url="https://www.bungie.net/common/destiny2_content/icons/a72e5ce5c66e21f34a420271a30d7ec3.png"
         )
         embed.add_field(
-            name="Legend <:light_icon:1021555304183386203> 1570",
-            value=f"{currentNightfall.legend.details}"
+            name="Legend <:light_icon:1021555304183386203> 1580",
+            value=f"{current_nightfall.legend.details}"
         )
         embed.add_field(
-            name="Master <:light_icon:1021555304183386203> 1600",
-            value=f"{currentNightfall.master.details}"
+            name="Master <:light_icon:1021555304183386203> 1610",
+            value=f"{current_nightfall.master.details}"
         )
 
         await ctx.send(embed=embed)
@@ -126,9 +116,16 @@ class Destiny(commands.Cog):
     async def grandmaster(self, ctx: commands.Context) -> None:
         current = SharkBot.Destiny.Nightfall.get_current()
 
+        if datetime.utcnow() < date(2023, 1, 17):
+            embed = discord.Embed()
+            embed.title = "Grandmaster Nightfalls"
+            embed.description = "Grandmaster Nightfalls release on January 17th, 2023"
+            await ctx.reply(embed=embed, mention_author=False)
+            return
+
         embed = discord.Embed()
         embed.title = "Grandmaster Nightfalls"
-        embed.description = f"Power Level Requirement: <:light_icon:1021555304183386203>1595"
+        embed.description = f"Power Level Requirement: <:light_icon:1021555304183386203>1605"
         embed.colour = discord.Colour.dark_red()
 
         embed.add_field(
@@ -155,7 +152,7 @@ class Destiny(commands.Cog):
         embed.set_thumbnail(
             url="https://www.bungie.net/common/destiny2_content/icons/6a2761d2475623125d896d1a424a91f9.png"
         )
-        for lostSector in SharkBot.Destiny.LostSector.lostSectors:
+        for lostSector in SharkBot.Destiny.LostSector.lost_sectors:
             embed.add_field(
                 name=f"{lostSector.name} - {lostSector.destination}",
                 value=f"Champions: *{lostSector.champion_list}*\nShields: *{lostSector.shield_list}*",
@@ -184,7 +181,7 @@ class Destiny(commands.Cog):
     async def countdown(self, ctx: commands.Context) -> None:
         embed = discord.Embed()
         embed.title = "Lightfall Countdown"
-        embed.description = SharkBot.Destiny.lightfallCountdown.time_remaining_string
+        embed.description = SharkBot.Destiny.lightfall_countdown.time_remaining_string
         embed.description += "until Lightfall releases"
         embed.add_field(
             name="Release Date",
@@ -262,16 +259,16 @@ class Destiny(commands.Cog):
         else:
             if level == 1:
                 embed.description = "+1 given by default"
-                bonusRange = list(range(2, 6))
+                bonus_range = list(range(2, 6))
             else:
-                bonusRange = list(range(level, level+5))
+                bonus_range = list(range(level, level+5))
 
-            for lvl in bonusRange:
+            for lvl in bonus_range:
                 xp = calc_xp(lvl)
-                totalxp = sum([calc_xp(x) for x in range(2, lvl+1)])
+                total_xp = sum([calc_xp(x) for x in range(2, lvl+1)])
                 embed.add_field(
                     name=f"`+{'{:,}'.format(lvl)}` Bonus",
-                    value=f"`{'{:,}'.format(xp)}` xp\n`{'{:,}'.format(totalxp)}` xp total",
+                    value=f"`{'{:,}'.format(xp)}` xp\n`{'{:,}'.format(total_xp)}` xp total",
                     inline=False
                 )
 

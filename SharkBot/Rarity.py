@@ -1,12 +1,18 @@
-from SharkBot import Errors, Icons
+from typing import Optional
+
+from SharkBot import Errors, Icon
 
 
 class Rarity:
 
-    def __init__(self, name: str, value: int, iconName: str) -> None:
+    def __init__(self, name: str, value: int, icon_name: str) -> None:
         self.name = name
         self.value = value
-        self.icon: str = Icons.Collections[iconName]
+        self._icon_name: str = icon_name
+
+    @property
+    def icon(self) -> str:
+        return Icon.get(self._icon_name)
 
 
 common = Rarity("Common", 5, "common_item")
@@ -24,6 +30,9 @@ easter = Rarity("Easter", 10, "easter_item")
 summer = Rarity("Summer", 10, "summer_item")
 slime_rancher = Rarity("Slime Rancher", 10, "slime_rancher_item")
 halloween = Rarity("Halloween", 10, "halloween_item")
+christmas = Rarity("Christmas", 10, "christmas_item")
+new_year = Rarity("New Year", 10, "new_year_item")
+fragment = Rarity("Fragment", 500, "fragment_item")
 
 rarities = [
     common,
@@ -38,7 +47,10 @@ rarities = [
     easter,
     summer,
     slime_rancher,
-    halloween
+    halloween,
+    christmas,
+    new_year,
+    fragment
 ]
 
 
