@@ -155,28 +155,20 @@ class MemberBungie:
                     raise SharkBot.Errors.BungieAPI.InternalServerError
 
     async def get_craftables_data(self) -> dict[str, list[_CraftablesResponse]]:
-        token = await self._get_token()
-        async with aiohttp.ClientSession() as session:
-            async with session.get(
-                    f"https://www.bungie.net/Platform/Destiny2/{self._destiny_membership_type}/Profile/{self._destiny_membership_id}?components=900",
-                    headers=secret.BungieAPI.bungie_headers(token)
-            ) as response:
-                if not response.ok:
-                    self._token = None
-                    raise SharkBot.Errors.BungieAPI.InternalServerError
-                else:
-                    data = await response.json()
-                    records = data["Response"]["profileRecords"]["data"]["records"]
-                    output = {}
-                    for weapon_type, weapon_records in _crafting_records.items():
-                        weapon_data = []
-                        for weapon in weapon_records:
-                            weapon_data.append(_CraftablesResponse(
-                                weapon_name=weapon["name"],
-                                weapon_season=weapon["season"],
-                                record_data=records[weapon["record_hash"]]["objectives"][0]
-                            ))
-                        output[weapon_type] = weapon_data
+        response_data = await self.get_profile_request(components=900)
+        records = response_data["Response"]["profileRecords"]["data"]["records"]
+        output = {}
+        for weapon_type, weapon_records in _crafting_records.items():
+            weapon_data = []
+            for weapon in weapon_records:
+                weapon_data.append(
+                    _CraftablesResponse(
+                        weapon_name=weapon["name"],
+                        weapon_season=weapon["season"],
+                        record_data=records[weapon["record_hash"]]["objectives"][0]
+                    )
+                )
+            output[weapon_type] = weapon_data
         return output
 
     async def get_monument_data(self) -> dict[str, dict[str, bool]]:
