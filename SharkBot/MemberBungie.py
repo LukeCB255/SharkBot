@@ -17,6 +17,18 @@ class _CraftablesResponse:
         self.quota: int = record_data["completionValue"]
         self.complete: bool = record_data["complete"]
 
+    @property
+    def data(self) -> dict[str, Union[int, str, bool]]:
+        return {
+            "weapon_name": self.weapon_name,
+            "weapon_season": self.weapon_season,
+            "record_data": {
+                "progress": self.progress,
+                "completionValue": self.quota,
+                "complete": self.complete
+            }
+        }
+
 
 class MemberBungie:
 
