@@ -122,6 +122,13 @@ class MemberBungie:
         else:
             return None
 
+    def get_cached_monument_data(self) -> Optional[dict[str, dict[str, bool]]]:
+        cached_data = self.get_cached_data()
+        if "monument" in cached_data:
+            return cached_data["monument"]
+        else:
+            return None
+
     async def get_craftables_data(self) -> dict[str, list[_CraftablesResponse]]:
         token = await self._get_token()
         async with aiohttp.ClientSession() as session:
