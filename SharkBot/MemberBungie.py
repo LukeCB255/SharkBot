@@ -127,7 +127,7 @@ class MemberBungie:
         with open(self._cache_filepath, "w+") as _outfile:
             json.dump(data, _outfile, indent=2)
 
-    def get_cached_craftables_data(self) -> Optional[dict]:
+    def get_cached_craftables_data(self) -> Optional[dict[str, list[_CraftablesResponse]]]:
         cached_data = self.get_cached_data()
         if "craftables" in cached_data:
             return cached_data["craftables"]
@@ -140,6 +140,19 @@ class MemberBungie:
             return cached_data["monument"]
         else:
             return None
+
+    async def get_profile_request(self, components: int) -> dict:
+        token = await self._get_token()
+        async with aiohttp.ClientSession() as session:
+            async with session.get(
+                    f"https://www.bungie.net/Platform/Destiny2/{self._destiny_membership_type}/Profile/{self._destiny_membership_id}?components={components}",
+                    headers=secret.BungieAPI.bungie_headers(token)
+            ) as response:
+                if response.ok:
+                    return await response.json()
+                else:
+                    self._token = None
+                    raise SharkBot.Errors.BungieAPI.InternalServerError
 
     async def get_craftables_data(self) -> dict[str, list[_CraftablesResponse]]:
         token = await self._get_token()
