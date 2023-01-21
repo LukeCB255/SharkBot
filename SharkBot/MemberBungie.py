@@ -111,6 +111,10 @@ class MemberBungie:
         else:
             return None
 
+    def write_cached_data(self, data: dict):
+        with open(self._cache_filepath, "w+") as _outfile:
+            json.dump(data, _outfile, indent=2)
+
     async def get_craftables_data(self) -> dict[str, list[_CraftablesResponse]]:
         token = await self._get_token()
         async with aiohttp.ClientSession() as session:
