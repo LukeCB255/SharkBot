@@ -1,4 +1,5 @@
 import json
+import os
 from datetime import datetime, timedelta
 from typing import Optional, Union
 import aiohttp
@@ -28,6 +29,10 @@ class MemberBungie:
         self._refresh_token_expires = refresh_token_expires
         self._destiny_membership_id = destiny_membership_id
         self._destiny_membership_type = destiny_membership_type
+
+    @property
+    def _cache_filepath(self) -> str:
+        return f"data/live/bungie_cache/{self._member.id}.json"
 
     def delete_credentials(self) -> bool:
         self._token = None
@@ -98,6 +103,13 @@ class MemberBungie:
         self._destiny_membership_type = data["destiny_membership_type"]
         self._member.write_data()
         return self._token
+
+    def get_cached_data(self) -> Optional[dict]:
+        if os.path.exists(self._cache_filepath):
+            with open(self._cache_filepath, "r") as _infile:
+                return json.load(_infile)
+        else:
+            return None
 
     async def get_craftables_data(self) -> dict[str, list[_CraftablesResponse]]:
         token = await self._get_token()
